@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+      <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PodoElite Pro · Dashboard</title>
+    
+    <!-- CSP (Seguridad) -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'unsafe-inline';
+        style-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline';
+        img-src 'self' data: https://qagxnpmztawislaehkfa.supabase.co;
+        connect-src 'self' https://qagxnpmztawislaehkfa.supabase.co;
+        font-src 'self' https://cdnjs.cloudflare.com;
+    ">
+    
+    <!-- Font Awesome 6 (Free) -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Supabase JS (v2) -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0f172a;
+            --primary-light: #1e293b;
+            --accent: #3b82f6;
+            --accent-glow: #60a5fa;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            --card-bg: #ffffff;
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.03);
+            --shadow-lg: 0 10px 30px -10px rgba(0,0,0,0.05);
+            --radius-sm: 12px;
+            --radius-md: 18px;
+            --radius-lg: 24px;
+            --transition: all 0.2s ease;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background: var(--gray-100);
+            color: var(--gray-900);
+            min-height: 100vh;
+        }
+
+        /* ===== TOP BAR ===== */
+        .top-bar {
+            background: var(--card-bg);
+            padding: 0.8rem 2rem;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid var(--gray-200);
+            position: sticky;
+            top: 0;
+            z-index: 50;
+            backdrop-filter: blur(8px);
+            background: rgba(255,255,255,0.9);
+        }
+
+        .logo-area {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .logo-icon {
+            background: var(--primary);
+            color: white;
+            width: 42px;
+            height: 42px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 12px;
+            font-size: 1.5rem;
+            box-shadow: 0 4px 10px rgba(15,23,42,0.1);
+        }
+
+        .logo-text {
+            font-weight: 700;
+            font-size: 1.4rem;
+            color: var(--primary);
+            letter-spacing: -0.02em;
+        }
+
+        .logo-text small {
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: var(--gray-500);
+            margin-left: 6px;
+            letter-spacing: normal;
+        }
+
+        .user-area {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .user-profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: var(--gray-100);
+            padding: 8px 16px 8px 12px;
+            border-radius: 40px;
+            cursor: pointer;
+            transition: var(--transition);
+            border: 1px solid var(--gray-200);
+        }
+
+        .user-profile:hover {
+            background: var(--gray-200);
+            border-color: var(--gray-300);
+        }
+
+        .user-avatar {
+            background: var(--accent);
+            color: white;
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 1rem;
+        }
+
+        .user-info {
+            line-height: 1.3;
+        }
+
+        .user-name {
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: var(--gray-900);
+        }
+
+        .user-role {
+            font-size: 0.7rem;
+            color: var(--gray-500);
+        }
+
+        .logout-btn {
+            background: none;
+            border: 1px solid var(--gray-300);
+            color: var(--gray-600);
+            padding: 10px 18px;
+            border-radius: 30px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logout-btn:hover {
+            background: var(--danger);
+            border-color: var(--danger);
+            color: white;
+        }
+
+        /* ===== MAIN LAYOUT ===== */
+        .app-container {
+            display: flex;
+            min-height: calc(100vh - 70px);
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 260px;
+            background: var(--card-bg);
+            border-right: 1px solid var(--gray-200);
+            padding: 2rem 1rem;
+        }
+
+        .nav-section {
+            margin-bottom: 2rem;
+        }
+
+        .nav-label {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: var(--gray-400);
+            font-weight: 600;
+            margin-bottom: 1rem;
+            padding-left: 0.8rem;
+        }
+
+        .nav-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 0.8rem 1rem;
+            color: var(--gray-600);
+            text-decoration: none;
+            border-radius: 12px;
+            margin-bottom: 4px;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+
+        .nav-item i {
+            width: 22px;
+            font-size: 1.1rem;
+            color: var(--gray-400);
+        }
+
+        .nav-item:hover {
+            background: var(--gray-100);
+            color: var(--primary);
+        }
+
+        .nav-item:hover i {
+            color: var(--accent);
+        }
+
+        .nav-item.active {
+            background: var(--gray-100);
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .nav-item.active i {
+            color: var(--accent);
+        }
+
+        /* MAIN CONTENT */
+        .main-content {
+            flex: 1;
+            padding: 2rem 2.5rem;
+            background: var(--gray-100);
+        }
+
+        /* WELCOME BANNER (minimal) */
+        .welcome-mini {
+            background: linear-gradient(145deg, var(--primary), var(--primary-light));
+            border-radius: var(--radius-lg);
+            padding: 2rem 2.5rem;
+            margin-bottom: 2rem;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            box-shadow: 0 15px 30px -10px rgba(15,23,42,0.2);
+        }
+
+        .welcome-text h1 {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+        }
+
+        .welcome-text p {
+            opacity: 0.9;
+            font-size: 0.95rem;
+        }
+
+        .date-chip {
+            background: rgba(255,255,255,0.12);
+            padding: 0.6rem 1.5rem;
+            border-radius: 40px;
+            font-size: 0.95rem;
+            backdrop-filter: blur(4px);
+            border: 1px solid rgba(255,255,255,0.1);
+        }
+
+        /* STATS CARDS (ultra light) */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .stat-card {
+            background: white;
+            padding: 1.5rem 1.2rem;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+            transition: var(--transition);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+            border-color: var(--gray-300);
+        }
+
+        .stat-left {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .stat-label {
+            font-size: 0.8rem;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+        }
+
+        .stat-number {
+            font-size: 2.2rem;
+            font-weight: 700;
+            color: var(--primary);
+            line-height: 1.2;
+        }
+
+        .stat-icon {
+            width: 48px;
+            height: 48px;
+            background: var(--gray-100);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+            font-size: 1.5rem;
+        }
+
+        /* MODULES (horizontal compact) */
+        .modules-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 1.2rem;
+        }
+
+        .modules-header h2 {
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .modules-header i {
+            color: var(--accent);
+        }
+
+        .modules-row {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 1.2rem;
+            margin-bottom: 2.5rem;
+        }
+
+        .module-tile {
+            background: white;
+            border-radius: var(--radius-md);
+            padding: 1.5rem 1rem;
+            text-align: center;
+            text-decoration: none;
+            color: inherit;
+            border: 1px solid var(--gray-200);
+            transition: var(--transition);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .module-tile:hover {
+            transform: translateY(-3px);
+            border-color: var(--accent);
+            box-shadow: 0 8px 20px -10px var(--accent);
+        }
+
+        .module-tile i {
+            font-size: 2rem;
+            color: var(--accent);
+            margin-bottom: 0.8rem;
+            background: var(--gray-100);
+            width: 60px;
+            height: 60px;
+            line-height: 60px;
+            border-radius: 30px;
+            display: inline-block;
+        }
+
+        .module-tile h4 {
+            font-weight: 600;
+            margin-bottom: 0.3rem;
+            font-size: 1rem;
+        }
+
+        .module-tile p {
+            font-size: 0.75rem;
+            color: var(--gray-500);
+        }
+
+        /* QUICK ACTIONS (botones minimal) */
+        .quick-section {
+            background: white;
+            border-radius: var(--radius-md);
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+            border: 1px solid var(--gray-200);
+        }
+
+        .quick-section h3 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--gray-700);
+            margin-bottom: 1.2rem;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .quick-buttons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .quick-btn {
+            background: var(--gray-100);
+            border: 1px solid var(--gray-200);
+            padding: 0.7rem 1.5rem;
+            border-radius: 40px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--gray-700);
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .quick-btn i {
+            color: var(--accent);
+            font-size: 0.9rem;
+        }
+
+        .quick-btn:hover {
+            background: var(--accent);
+            border-color: var(--accent);
+            color: white;
+        }
+
+        .quick-btn:hover i {
+            color: white;
+        }
+
+        /* ACTIVITY TABS (simplified) */
+        .activity-card {
+            background: white;
+            border-radius: var(--radius-md);
+            border: 1px solid var(--gray-200);
+            overflow: hidden;
+        }
+
+        .activity-tabs {
+            display: flex;
+            border-bottom: 1px solid var(--gray-200);
+            background: var(--gray-50);
+        }
+
+        .tab-btn {
+            padding: 1rem 1.8rem;
+            background: none;
+            border: none;
+            font-weight: 600;
+            color: var(--gray-500);
+            cursor: pointer;
+            transition: var(--transition);
+            border-bottom: 3px solid transparent;
+            font-size: 0.9rem;
+        }
+
+        .tab-btn.active {
+            color: var(--accent);
+            border-bottom-color: var(--accent);
+            background: white;
+        }
+
+        .tab-btn:hover {
+            color: var(--primary);
+        }
+
+        .activity-list {
+            min-height: 300px;
+            padding: 0.5rem 0;
+        }
+
+        .activity-item {
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+            padding: 1rem 1.5rem;
+            border-bottom: 1px solid var(--gray-100);
+            transition: var(--transition);
+            cursor: pointer;
+        }
+
+        .activity-item:hover {
+            background: var(--gray-50);
+        }
+
+        .activity-icon-small {
+            width: 38px;
+            height: 38px;
+            background: var(--gray-100);
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--accent);
+        }
+
+        .activity-item strong {
+            font-weight: 600;
+            color: var(--gray-800);
+            font-size: 0.95rem;
+        }
+
+        .activity-item small {
+            color: var(--gray-500);
+            font-size: 0.8rem;
+            display: block;
+        }
+
+        .activity-time {
+            margin-left: auto;
+            font-size: 0.75rem;
+            color: var(--gray-400);
+            background: var(--gray-100);
+            padding: 0.3rem 1rem;
+            border-radius: 40px;
+        }
+
+        .no-data {
+            text-align: center;
+            padding: 3rem;
+            color: var(--gray-400);
+        }
+
+        .no-data i {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        /* loading overlay minimal */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.7);
+            backdrop-filter: blur(3px);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+        }
+
+        .minimal-loader {
+            width: 50px;
+            height: 50px;
+            border: 3px solid var(--gray-200);
+            border-top-color: var(--accent);
+            border-radius: 50%;
+            animation: spin 0.7s linear infinite;
+        }
+
+        @keyframes spin { to { transform: rotate(360deg); } }
+
+        /* responsive */
+        @media (max-width: 1100px) {
+            .stats-grid { grid-template-columns: repeat(2,1fr); }
+            .modules-row { grid-template-columns: repeat(2,1fr); }
+        }
+        @media (max-width: 800px) {
+            .app-container { flex-direction: column; }
+            .sidebar { width: 100%; border-right: none; border-bottom: 1px solid var(--gray-200); padding: 1rem; }
+            .main-content { padding: 1.5rem; }
+            .stats-grid { grid-template-columns: 1fr; }
+            .modules-row { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="minimal-loader"></div>
+</div>
+
+<!-- TOP BAR (slim) -->
+<div class="top-bar">
+    <div class="logo-area">
+       
+<div class="logo-icon"><i class="fas fa-clinic-medical"></i></div>
+        <div class="logo-text">PodoElite <small>pro</small></div>
+    </div>
+    <div class="user-area">
+        <div class="user-profile" onclick="window.location.href='perfil.html'">
+            <div class="user-avatar" id="avatarInitial">DR</div>
+            <div class="user-info">
+                <div class="user-name" id="doctorName">Cargando...</div>
+                <div class="user-role">Podólogo</div>
+            </div>
+        </div>
+        <button class="logout-btn" onclick="cerrarSesion()">
+            <i class="fas fa-sign-out-alt"></i> <span class="hide-mob">Salir</span>
+        </button>
+    </div>
+</div>
+
+<div class="app-container">
+    <!-- SIDEBAR (compacto) -->
+    <aside class="sidebar">
+        <div class="nav-section">
+            <div class="nav-label">Principal</div>
+            <a href="menu.html" class="nav-item active">
+                <i class="fas fa-chart-pie"></i> <span> Pagina Principa </span>
+            </a>
+            <a href="registro.html" class="nav-item">
+                <i class="fas fa-users"></i> <span>Pacientes</span>
+            </a>
+            <a href="citas.html" class="nav-item">
+                <i class="fas fa-calendar-check"></i> <span>Citas</span>
+            </a>
+            <a href="examen.html" class="nav-item">
+                <i class="fas fa-stethoscope"></i> <span>Exploraciones</span>
+            </a>
+            <a href="historial.html" class="nav-item">
+                <i class="fas fa-file-medical"></i> <span>Historial</span>
+            </a>
+        </div>
+        <div class="nav-section">
+            <div class="nav-label">Configuración</div>
+            <a href="perfil.html" class="nav-item">
+                <i class="fas fa-user-md"></i> <span>Mi Perfil</span>
+            </a>
+        </div>
+    </aside>
+
+    <!-- MAIN CONTENT -->
+    <main class="main-content">
+        <!-- Bienvenida ultra rápida -->
+        <div class="welcome-mini">
+            <div class="welcome-text">
+                <h1>Hola, <span id="doctorNombre">Doctor</span> 👋</h1>
+                <p>Gestión podológica integral · todo en un solo lugar</p>
+            </div>
+            <div class="date-chip" id="fechaActual"></div>
+        </div>
+
+        <!-- Estadísticas rápidas (solo números, sin queries pesadas anidadas) -->
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-left">
+                    <span class="stat-label">Pacientes</span>
+                    <span class="stat-number" id="totalPacientes">0</span>
+                </div>
+                <div class="stat-icon"><i class="fas fa-user-injured"></i></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-left">
+                    <span class="stat-label">Citas Hoy</span>
+                    <span class="stat-number" id="citasHoy">0</span>
+                </div>
+                <div class="stat-icon"><i class="fas fa-clock"></i></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-left">
+                    <span class="stat-label">Exploraciones</span>
+                    <span class="stat-number" id="totalExploraciones">0</span>
+                </div>
+                <div class="stat-icon"><i class="fas fa-notes-medical"></i></div>
+            </div>
+            <div class="stat-card">
+                <div class="stat-left">
+                    <span class="stat-label">Historias</span>
+                    <span class="stat-number" id="totalHistorias">0</span>
+                </div>
+                <div class="stat-icon"><i class="fas fa-folder-open"></i></div>
+            </div>
+        </div>
+
+        <!-- Módulos (accesos directos) -->
+        <div class="modules-header">
+            <h2><i class="fas fa-cubes"></i> Módulos rápidos</h2>
+        </div>
+        <div class="modules-row">
+            <a href="registro.html" class="module-tile"><i class="fas fa-user-plus"></i><h4>Nuevo Paciente</h4><p>registro + antecedentes</p></a>
+            <a href="citas.html" class="module-tile"><i class="fas fa-calendar-plus"></i><h4>Nueva Cita</h4><p>agenda + PDF</p></a>
+            <a href="examen.html" class="module-tile"><i class="fas fa-stethoscope"></i><h4>Exploración</h4><p>examen físico completo</p></a>
+            <a href="historial.html" class="module-tile"><i class="fas fa-history"></i><h4>Historial</h4><p>todo del paciente</p></a>
+        </div>
+
+        <!-- Acciones rápidas (botones pequeños) -->
+        <div class="quick-section">
+            <h3><i class="fas fa-bolt"></i> Acciones rápidas</h3>
+            <div class="quick-buttons">
+                <button class="quick-btn" onclick="window.location.href='registro.html'"><i class="fas fa-user-plus"></i> Paciente</button>
+                <button class="quick-btn" onclick="window.location.href='citas.html'"><i class="fas fa-calendar-plus"></i> Cita</button>
+                <button class="quick-btn" onclick="window.location.href='examen.html'"><i class="fas fa-notes-medical"></i> Exploración</button>
+                <button class="quick-btn" onclick="buscarPaciente()"><i class="fas fa-search"></i> Buscar</button>
+                <button class="quick-btn" onclick="window.location.href='historial.html'"><i class="fas fa-file-medical"></i> Ver Historial</button>
+            </div>
+        </div>
+
+        <!-- Actividad reciente (cargada con 1 sola query por pestaña) -->
+        <div class="activity-card">
+            <div class="activity-tabs">
+                <button class="tab-btn active" onclick="cargarActividad('citas', this)">Citas</button>
+                <button class="tab-btn" onclick="cargarActividad('exploraciones', this)">Exploraciones</button>
+                <button class="tab-btn" onclick="cargarActividad('pacientes', this)">Pacientes</button>
+            </div>
+            <div class="activity-list" id="activityList">
+                <div class="no-data"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script type="module">
+    
+ 
+    import { supabase } from './config.js';
+    import { verificarSuscripcion, mostrarLoading, cerrarSesion as cerrarSesionUtil } from './utils.js';
+
+    // Después de los imports, agrega ESTA línea:
+const originalInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML').set;// Asignar cerrar sesión global
+    window.cerrarSesion = cerrarSesionUtil;
+
+
+Object.defineProperty(Element.prototype, 'innerHTML', {
+    set(value) {
+        const sanitized = window.DOMPurify ? window.DOMPurify.sanitize(value) : value;
+        return originalInnerHTML.call(this, sanitized);
+    }
+});
+    // Cargar datos del doctor
+    async function cargarDoctor() {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) { 
+                window.location.href = 'index.html'; 
+                return; 
+            }
+            
+            const { data: perfil } = await supabase
+                .from('perfiles')
+                .select('nombre_doctor')
+                .eq('id', user.id)
+                .single();
+
+            if (perfil) {
+                const nombre = perfil.nombre_doctor || 'Dr.';
+                document.getElementById('doctorName').textContent = nombre;
+                document.getElementById('doctorNombre').textContent = nombre.split(' ')[0] || 'Doctor';
+                document.getElementById('avatarInitial').textContent = nombre.charAt(0).toUpperCase() || 'DR';
+            }
+        } catch (error) {
+            console.error("Error cargando doctor:", error);
+        }
+    }
+
+    // Cargar estadísticas
+    async function cargarEstadisticas() {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const fechaHoy = new Date().toISOString().split('T')[0];
+            
+            // Ejecutar consultas en paralelo
+            const [totalPacientes, citasHoy, totalExploraciones] = await Promise.all([
+                supabase.from('pacientes').select('*', { count: 'exact', head: true }).eq('doctor_id', user.id),
+                supabase.from('citas').select('*', { count: 'exact', head: true }).eq('doctor_id', user.id).eq('fecha_cita', fechaHoy),
+                supabase.from('exploracion_fisica').select('*', { count: 'exact', head: true }).eq('doctor_id', user.id)
+            ]);
+
+            // Actualizar DOM
+            document.getElementById('totalPacientes').textContent = totalPacientes.count || 0;
+            document.getElementById('citasHoy').textContent = citasHoy.count || 0;
+            document.getElementById('totalExploraciones').textContent = totalExploraciones.count || 0;
+            document.getElementById('totalHistorias').textContent = totalPacientes.count || 0; // Mismo que pacientes
+            
+            console.log("Estadísticas cargadas:", {
+                pacientes: totalPacientes.count,
+                citasHoy: citasHoy.count,
+                exploraciones: totalExploraciones.count
+            });
+            
+        } catch (error) {
+            console.error("Error cargando estadísticas:", error);
+        }
+    }
+
+    // Actividad reciente
+    window.cargarActividad = async function(tipo, btn) {
+        document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        
+        const activityList = document.getElementById('activityList');
+        activityList.innerHTML = '<div class="no-data"><i class="fas fa-spinner fa-spin"></i> Cargando...</div>';
+
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            let html = '';
+            if (tipo === 'citas') {
+                const { data } = await supabase
+                    .from('citas')
+                    .select('cedula_paciente, nombre_paciente, tipo_consulta, fecha_cita, hora_cita')
+                    .eq('doctor_id', user.id)
+                    .order('fecha_cita', { ascending: false })
+                    .limit(8);
+                    
+                if (!data?.length) {
+                    html = '<div class="no-data"><i class="far fa-calendar-times"></i><p>No hay citas recientes</p></div>';
+                } else {
+                    html = data.map(c => `
+                        <div class="activity-item" onclick="window.location.href='citas.html?buscar=${c.cedula_paciente}'">
+                            <div class="activity-icon-small"><i class="fas fa-calendar-check"></i></div>
+                            <div>
+                                <strong>${c.nombre_paciente || 'Paciente'}</strong>
+                                <small>${c.tipo_consulta}</small>
+                            </div>
+                            <div class="activity-time">${c.fecha_cita || ''}</div>
+                        </div>
+                    `).join('');
+                }
+            } else if (tipo === 'exploraciones') {
+                const { data } = await supabase
+                    .from('exploracion_fisica')
+                    .select('cedula_paciente, nombre_paciente, fecha')
+                    .eq('doctor_id', user.id)
+                    .order('fecha', { ascending: false })
+                    .limit(8);
+                    
+                if (!data?.length) {
+                    html = '<div class="no-data"><i class="fas fa-stethoscope"></i><p>Sin exploraciones</p></div>';
+                } else {
+                    html = data.map(e => `
+                        <div class="activity-item" onclick="window.location.href='examen.html?buscar=${e.cedula_paciente}'">
+                            <div class="activity-icon-small"><i class="fas fa-stethoscope"></i></div>
+                            <div>
+                                <strong>${e.nombre_paciente || 'Paciente'}</strong>
+                                <small>Exploración</small>
+                            </div>
+                            <div class="activity-time">${e.fecha || ''}</div>
+                        </div>
+                    `).join('');
+                }
+            } else {
+                const { data } = await supabase
+                    .from('pacientes')
+                    .select('cedula, nombre, apellido')
+                    .eq('doctor_id', user.id)
+                    .order('created_at', { ascending: false })
+                    .limit(8);
+                    
+                if (!data?.length) {
+                    html = '<div class="no-data"><i class="fas fa-users"></i><p>Sin pacientes nuevos</p></div>';
+                } else {
+                    html = data.map(p => `
+                        <div class="activity-item" onclick="window.location.href='registro.html?buscar=${p.cedula}'">
+                            <div class="activity-icon-small"><i class="fas fa-user"></i></div>
+                            <div>
+                                <strong>${p.apellido || ''} ${p.nombre || ''}</strong>
+                                <small>${p.cedula}</small>
+                            </div>
+                            <div class="activity-time">nuevo</div>
+                        </div>
+                    `).join('');
+                }
+            }
+            activityList.innerHTML = html;
+            
+        } catch (error) {
+            console.error("Error cargando actividad:", error);
+            activityList.innerHTML = '<div class="no-data"><i class="fas fa-exclamation-circle"></i><p>Error al cargar</p></div>';
+        }
+    };
+
+    // Buscar paciente
+    window.buscarPaciente = function() {
+        Swal.fire({
+            title: 'Buscar paciente',
+            input: 'text',
+            inputLabel: 'Cédula',
+            showCancelButton: true,
+            confirmButtonText: 'Ir',
+            cancelButtonText: 'Cancelar'
+        }).then((r) => { 
+            if (r.isConfirmed && r.value) {
+                window.location.href = `registro.html?buscar=${r.value}`;
+            }
+        });
+    };
+
+    // Inicialización
+    window.addEventListener('load', async () => {
+        mostrarLoading(true);
+        
+        try {
+            // Verificar suscripción
+            const accesoPermitido = await verificarSuscripcion();
+            if (!accesoPermitido) {
+                mostrarLoading(false);
+                return;
+            }
+            
+            // Fecha actual
+            document.getElementById('fechaActual').innerText = new Date().toLocaleDateString('es-ES', { 
+                weekday: 'long', 
+                year: 'numeric', 
+                month: 'long', 
+                day: 'numeric' 
+            });
+            
+            // Cargar datos
+            await cargarDoctor();
+            await cargarEstadisticas(); // 👈 AHORA SÍ CON PARÉNTESIS
+            await cargarActividad('citas', document.querySelector('.tab-btn.active'));
+            
+        } catch (error) {
+            console.error("Error en inicialización:", error);
+        } finally {
+            mostrarLoading(false);
+        }
+    });
+
+</script>
+</body>
+</html>

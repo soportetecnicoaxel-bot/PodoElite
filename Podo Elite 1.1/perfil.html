@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>PodoElite - Perfil Profesional</title>
+    
+    <!-- CSP (Seguridad) -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'unsafe-inline';
+        style-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline';
+        img-src 'self' data: https://qagxnpmztawislaehkfa.supabase.co;
+        connect-src 'self' https://qagxnpmztawislaehkfa.supabase.co;
+        font-src 'self' https://cdnjs.cloudflare.com;
+    ">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+   
+   <style>
+        :root { 
+            --p: #0284c7; 
+            --p-dark: #0369a1; 
+            --p-light: #e0f2fe;
+            --bg: #f8fafc; 
+            --success: #10b981;
+            --danger: #ef4444;
+            --gray-100: #f1f5f9;
+            --gray-500: #64748b;
+            --gray-700: #334155;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body { 
+            font-family: 'Segoe UI', system-ui, sans-serif; 
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            display: flex; 
+            justify-content: center; 
+            padding: 20px;
+            min-height: 100vh;
+        }
+        
+        /* Menú Hamburguesa */
+        .menu-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+
+        .hamburger-btn {
+            background: var(--p);
+            color: white;
+            border: none;
+            width: 55px;
+            height: 55px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 24px;
+            box-shadow: 0 8px 20px rgba(2, 132, 199, 0.3);
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .hamburger-btn:hover {
+            background: var(--p-dark);
+            transform: scale(1.05) rotate(90deg);
+        }
+
+        .menu-content {
+            display: none;
+            position: absolute;
+            top: 65px;
+            left: 0;
+            background: white;
+            min-width: 280px;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            overflow: hidden;
+            flex-direction: column;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .menu-content.show {
+            display: flex;
+        }
+
+        .menu-header {
+            padding: 20px;
+            background: linear-gradient(135deg, var(--p), var(--p-dark));
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .menu-content a {
+            text-decoration: none;
+            color: var(--gray-700);
+            padding: 15px 25px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid #f1f5f9;
+            transition: all 0.2s;
+        }
+
+        .menu-content a i {
+            width: 20px;
+            color: var(--p);
+        }
+
+        .menu-content a:hover {
+            background: var(--p-light);
+            padding-left: 35px;
+        }
+
+        .menu-content a.active {
+            background: var(--p-light);
+            color: var(--p);
+            border-left: 4px solid var(--p);
+        }
+
+        .menu-content hr {
+            margin: 8px 0;
+            border: none;
+            border-top: 1px solid #f1f5f9;
+        }
+
+        /* Tarjeta principal */
+        .card {
+            background: white;
+            width: 100%;
+            max-width: 700px;
+            padding: 40px;
+            border-radius: 30px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+            margin-left: 100px;
+            border: 1px solid rgba(255,255,255,0.5);
+            backdrop-filter: blur(10px);
+        }
+
+        h2 {
+            text-align: center;
+            color: var(--p);
+            font-size: 2rem;
+            margin-bottom: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        h2 i {
+            font-size: 2rem;
+        }
+
+        /* Foto de perfil */
+        .profile-container {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .profile-pic {
+            width: 150px;
+            height: 150px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 5px solid var(--p);
+            box-shadow: 0 10px 25px rgba(2, 132, 199, 0.3);
+            transition: all 0.3s;
+        }
+
+        .profile-pic:hover {
+            transform: scale(1.02);
+            box-shadow: 0 15px 35px rgba(2, 132, 199, 0.4);
+        }
+
+        .upload-btn {
+            background: none;
+            border: 2px solid var(--p);
+            color: var(--p);
+            padding: 10px 25px;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            margin-top: 15px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.9rem;
+        }
+
+        .upload-btn:hover {
+            background: var(--p);
+            color: white;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(2, 132, 199, 0.3);
+        }
+
+        /* Grid de campos */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .full { 
+            grid-column: span 2; 
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--gray-500);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        input, select {
+            padding: 14px;
+            border: 2px solid #e2e8f0;
+            border-radius: 12px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            outline: none;
+            background: white;
+        }
+
+        input:focus, select:focus {
+            border-color: var(--p);
+            box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.1);
+        }
+
+        input:hover, select:hover {
+            border-color: var(--p-light);
+        }
+
+        /* Botón guardar */
+        .btn-save {
+            background: linear-gradient(135deg, var(--p), var(--p-dark));
+            color: white;
+            border: none;
+            padding: 18px;
+            border-radius: 16px;
+            width: 100%;
+            font-weight: 700;
+            font-size: 1.1rem;
+            cursor: pointer;
+            margin-top: 30px;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            box-shadow: 0 10px 25px rgba(2, 132, 199, 0.3);
+        }
+
+        .btn-save:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(2, 132, 199, 0.4);
+        }
+
+        .btn-save:disabled {
+            opacity: 0.7;
+            transform: none;
+            cursor: not-allowed;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .card {
+                margin-left: 0;
+                padding: 20px;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .full {
+                grid-column: span 1;
+            }
+            
+            .menu-container {
+                position: relative;
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Menú Hamburguesa -->
+<div class="menu-container">
+    <button class="hamburger-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+    
+    <nav id="myMenu" class="menu-content">
+        <div class="menu-header">
+            <i class="fas fa-clinic-medical"></i> PodoElite Pro
+        </div>
+        
+        <a href="menu.html"><i class="fas fa-home"></i> Inicio</a>
+        <a href="registro.html"><i class="fas fa-user-plus"></i> Registro de Paciente</a>
+        <a href="citas.html"><i class="fas fa-calendar-check"></i> Nueva Cita</a>
+        <a href="examen.html"><i class="fas fa-stethoscope"></i> Exploración</a>
+        <a href="historial.html"><i class="fas fa-file-medical"></i> Historial</a>
+        
+        <hr>
+        
+        <a href="perfil.html" class="active"><i class="fas fa-user-md"></i> Mi Perfil Profesional</a>
+        
+        <a href="#" onclick="cerrarSesion()" style="color: var(--danger); font-weight: bold;">
+            <i class="fas fa-sign-out-alt"></i> CERRAR SESIÓN
+        </a>
+    </nav>
+</div>
+
+<div class="card">
+    <h2><i class="fas fa-user-md"></i> Mi Perfil Profesional</h2>
+    
+    <div class="profile-container">
+        <img id="img_preview" src="https://via.placeholder.com/150" class="profile-pic">
+        <input type="file" id="subir_foto" accept="image/*" style="display:none" onchange="preview(event)">
+        <button class="upload-btn" onclick="document.getElementById('subir_foto').click()">
+            <i class="fas fa-camera"></i> Cambiar Foto
+        </button>
+    </div>
+
+    <div class="grid">
+        <div class="field full">
+            <label><i class="fas fa-user"></i> Nombre del Profesional</label>
+            <input type="text" id="nombre_doctor" placeholder="Dr. Juan Pérez">
+        </div>
+        
+        <div class="field">
+            <label><i class="fas fa-stethoscope"></i> Especialidad</label>
+            <input type="text" id="especialidad" placeholder="Podología Clínica">
+        </div>
+        
+        <div class="field">
+            <label><i class="fas fa-id-card"></i> Registro Médico</label>
+            <input type="text" id="registro_medico" placeholder="1234-2025-12345">
+        </div>
+        
+        <div class="field">
+            <label><i class="fas fa-phone"></i> Teléfono</label>
+            <input type="text" id="telefono_doctor" placeholder="+593 99 999 9999">
+        </div>
+        
+        <div class="field">
+            <label><i class="fas fa-hospital"></i> Centro Médico</label>
+            <input type="text" id="centro_medico" placeholder="Clínica PodoElite">
+        </div>
+        
+        <!-- País -->
+        <div class="field">
+            <label><i class="fas fa-globe"></i> País</label>
+            <select id="pais" onchange="cargarCiudadesPorPais()">
+                <option value="">Cargando países...</option>
+            </select>
+        </div>
+        
+        <!-- Ciudad -->
+        <div class="field">
+            <label><i class="fas fa-city"></i> Ciudad</label>
+            <select id="ciudad">
+                <option value="">Primero seleccione un país</option>
+            </select>
+        </div>
+        
+        <div class="field full">
+            <label><i class="fas fa-map-marker-alt"></i> Dirección del Consultorio</label>
+            <input type="text" id="direccion_consultorio" placeholder="Av. Principal 123, Oficina 5">
+        </div>
+    </div>
+
+    <button class="btn-save" id="btnGuardar" onclick="guardarPerfil()">
+        <i class="fas fa-save"></i> GUARDAR CAMBIOS
+    </button>
+</div>
+
+<script type="module">
+    import { supabase } from './config.js';
+    import { mostrarLoading, notificar, confirmar } from './utils.js';
+    import { cargarPaises, cargarCiudades } from './js/ciudades.js';
+// Después de los imports, agrega ESTA línea:
+const originalInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML').set;
+   let paisesCache = [];
+
+// ============================================
+    // VARIABLES GLOBALES
+    // ============================================
+    
+
+
+Object.defineProperty(Element.prototype, 'innerHTML', {
+    set(value) {
+        const sanitized = window.DOMPurify ? window.DOMPurify.sanitize(value) : value;
+        return originalInnerHTML.call(this, sanitized);
+    }
+});
+    // ============================================
+    // FUNCIONES DEL MENÚ
+    // ============================================
+    window.toggleMenu = function() {
+        document.getElementById("myMenu").classList.toggle("show");
+    };
+
+    document.addEventListener('click', function(event) {
+        const menu = document.getElementById("myMenu");
+        const btn = document.querySelector('.hamburger-btn');
+        if (!menu.contains(event.target) && !btn.contains(event.target)) {
+            menu.classList.remove('show');
+        }
+    });
+
+    // ============================================
+    // CERRAR SESIÓN
+    // ============================================
+    window.cerrarSesion = async function() {
+        const confirmado = await confirmar('¿Deseas cerrar tu sesión profesional?');
+        if (!confirmado) return;
+        
+        mostrarLoading(true);
+        await supabase.auth.signOut();
+        window.location.href = "index.html";
+    };
+
+    // ============================================
+    // CARGAR PAÍSES
+    // ============================================
+    window.cargarPaisesEnSelect = async function() {
+        const select = document.getElementById('pais');
+        select.innerHTML = '<option value="">Cargando países...</option>';
+        
+        try {
+            const paises = await cargarPaises();
+            paisesCache = paises;
+            
+            select.innerHTML = '<option value="">Seleccione un país...</option>';
+            paises.forEach(pais => {
+                select.innerHTML += `<option value="${pais.codigo}">${pais.nombre}</option>`;
+            });
+        } catch (error) {
+            console.error("Error cargando países:", error);
+            select.innerHTML = '<option value="">Error al cargar países</option>';
+        }
+    };
+
+    // ============================================
+    // CARGAR CIUDADES POR PAÍS
+    // ============================================
+    window.cargarCiudadesPorPais = async function() {
+        const paisCodigo = document.getElementById('pais').value;
+        const ciudadSelect = document.getElementById('ciudad');
+        
+        if (!paisCodigo) {
+            ciudadSelect.innerHTML = '<option value="">Seleccione un país primero</option>';
+            return;
+        }
+        
+        ciudadSelect.innerHTML = '<option value="">Cargando ciudades...</option>';
+        
+        try {
+            const ciudades = await cargarCiudades(paisCodigo);
+            
+            ciudadSelect.innerHTML = '<option value="">Seleccione una ciudad...</option>';
+            ciudades.forEach(ciudad => {
+                ciudadSelect.innerHTML += `<option value="${ciudad.nombre}">${ciudad.nombre}</option>`;
+            });
+        } catch (error) {
+            console.error("Error cargando ciudades:", error);
+            ciudadSelect.innerHTML = '<option value="">Error al cargar ciudades</option>';
+        }
+    };
+
+    // ============================================
+    // CARGAR DATOS DEL PERFIL
+    // ============================================
+    window.onload = async () => {
+        mostrarLoading(true);
+        
+        // Cargar países primero
+        await window.cargarPaisesEnSelect();
+        
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (user) {
+                const { data: p, error } = await supabase
+                    .from('perfiles')
+                    .select('*')
+                    .eq('id', user.id)
+                    .maybeSingle(); // 👈 CAMBIADO DE single() A maybeSingle()
+                
+                if (error) throw error;
+                
+                if (p) {
+                    document.getElementById('nombre_doctor').value = p.nombre_doctor || '';
+                    document.getElementById('especialidad').value = p.especialidad || '';
+                    document.getElementById('registro_medico').value = p.registro_medico || '';
+                    document.getElementById('telefono_doctor').value = p.telefono_doctor || '';
+                    document.getElementById('centro_medico').value = p.centro_medico || '';
+                    document.getElementById('direccion_consultorio').value = p.direccion_consultorio || '';
+                    
+                    // Si tiene país guardado, seleccionarlo
+                    if (p.pais) {
+                        document.getElementById('pais').value = p.pais;
+                        await window.cargarCiudadesPorPais();
+                        
+                        // Si tiene ciudad guardada, seleccionarla
+                        if (p.ciudad) {
+                            setTimeout(() => {
+                                document.getElementById('ciudad').value = p.ciudad;
+                            }, 500);
+                        }
+                    }
+                    
+                    if(p.foto_url) document.getElementById('img_preview').src = p.foto_url;
+                }
+            }
+        } catch (error) {
+            console.error("Error cargando perfil:", error);
+            notificar('error', 'Error al cargar el perfil');
+        }
+        
+        mostrarLoading(false);
+    };
+
+    // ============================================
+    // PREVISUALIZAR IMAGEN
+    // ============================================
+    window.preview = function(e) {
+        const reader = new FileReader();
+        reader.onload = () => document.getElementById('img_preview').src = reader.result;
+        reader.readAsDataURL(e.target.files[0]);
+    };
+
+    // ============================================
+    // GUARDAR PERFIL
+    // ============================================
+    window.guardarPerfil = async function() {
+        const btn = document.getElementById('btnGuardar');
+        const originalText = btn.innerText;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+        btn.disabled = true;
+        mostrarLoading(true);
+
+        try {
+            const { data: { user }, error: userError } = await supabase.auth.getUser();
+            if (userError || !user) throw new Error("No hay sesión activa.");
+
+            const { data: perfilActual } = await supabase
+                .from('perfiles')
+                .select('foto_url')
+                .eq('id', user.id)
+                .maybeSingle(); // 👈 CAMBIADO A maybeSingle()
+            
+            let fotoUrl = perfilActual ? perfilActual.foto_url : null;
+
+            // Subir foto si hay
+            const file = document.getElementById('subir_foto').files[0];
+            if (file) {
+                const tiposPermitidos = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+                if (!tiposPermitidos.includes(file.type)) {
+                    notificar('error', 'Formato no válido. Usa JPG, PNG, GIF o WEBP');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    mostrarLoading(false);
+                    return;
+                }
+                if (file.size > 2 * 1024 * 1024) {
+                    notificar('error', 'La imagen no debe superar 2MB');
+                    btn.innerHTML = originalText;
+                    btn.disabled = false;
+                    mostrarLoading(false);
+                    return;
+                }
+                
+                const fileName = `${user.id}/profile.png`; // 👈 CON SLASH
+                const { error: uploadError } = await supabase.storage
+                    .from('avatares')
+                    .upload(fileName, file, { upsert: true });
+
+                if (uploadError) throw uploadError;
+
+                const { data: urlData } = supabase.storage
+                    .from('avatares')
+                    .getPublicUrl(fileName);
+                
+                fotoUrl = urlData.publicUrl;
+            }
+
+            // Guardar país y ciudad
+            const pais = document.getElementById('pais').value;
+            const ciudad = document.getElementById('ciudad').value;
+            
+            const paisSeleccionado = paisesCache.find(p => p.codigo === pais);
+            const paisNombre = paisSeleccionado ? paisSeleccionado.nombre : '';
+
+            const updates = {
+                id: user.id,
+                nombre_doctor: document.getElementById('nombre_doctor').value,
+                especialidad: document.getElementById('especialidad').value,
+                registro_medico: document.getElementById('registro_medico').value,
+                telefono_doctor: document.getElementById('telefono_doctor').value,
+                centro_medico: document.getElementById('centro_medico').value,
+                direccion_consultorio: document.getElementById('direccion_consultorio').value,
+                pais: pais,
+                pais_nombre: paisNombre,
+                ciudad: ciudad,
+                foto_url: fotoUrl
+            };
+
+            // 👈 IMPORTANTE: Usar upsert con onConflict
+            const { error: upsertError } = await supabase
+                .from('perfiles')
+                .upsert(updates, { onConflict: 'id' });
+
+            if (upsertError) throw upsertError;
+
+            mostrarLoading(false);
+            await notificar('exito', 'Perfil actualizado correctamente');
+            
+            setTimeout(() => {
+                window.location.href = "menu.html";
+            }, 1500);
+
+        } catch (error) {
+            mostrarLoading(false);
+            console.error("Error completo:", error);
+            notificar('error', error.message);
+            btn.innerHTML = originalText;
+            btn.disabled = false;
+        }
+    };
+</script>
+</body>
+</html>

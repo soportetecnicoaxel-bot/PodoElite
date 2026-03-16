@@ -1,0 +1,743 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PodoElite - Sistema Integral</title>
+    
+    <!-- CSP (Seguridad) -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'unsafe-inline';
+        style-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline';
+        img-src 'self' data: https://qagxnpmztawislaehkfa.supabase.co;
+        connect-src 'self' https://qagxnpmztawislaehkfa.supabase.co;
+        font-src 'self' https://cdnjs.cloudflare.com;
+    ">
+    
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root { --p: #0284c7; --bg: #f1f5f9; --txt: #1e293b; --success: #22c55e; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); color: var(--txt); display: flex; justify-content: center; padding: 20px; }
+        .card { background: white; width: 100%; max-width: 750px; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); border: 1px solid #e2e8f0; }
+        h2 { color: var(--p); display: flex; align-items: center; gap: 10px; margin-bottom: 25px; font-size: 22px; }
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 15px; }
+        .full { grid-column: span 2; }
+        .field { display: flex; flex-direction: column; }
+        label { font-size: 11px; font-weight: bold; text-transform: uppercase; color: #64748b; margin-bottom: 5px; }
+        input, select { padding: 12px; border: 1.5px solid #e2e8f0; border-radius: 10px; font-size: 14px; outline: none; transition: 0.2s; }
+        input:focus, select:focus { border-color: var(--p); box-shadow: 0 0 0 3px #e0f2fe; }
+        .id-view { background: #e0f2fe; color: var(--p); border: 2px dashed var(--p); text-align: center; font-weight: bold; font-family: monospace; }
+        .medical-panel { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 10px; background: #f8fafc; padding: 15px; border-radius: 15px; border: 1px solid #eef2f6; }
+        .check-item { display: flex; align-items: center; gap: 8px; font-size: 13px; background: white; padding: 10px; border-radius: 8px; border: 1px solid #e2e8f0; cursor: pointer; transition: 0.2s; }
+        .check-item:hover { border-color: var(--p); background: #f0f9ff; }
+        .check-item input { width: 16px; height: 16px; cursor: pointer; }
+        .extra-t { display: none; margin-top: 5px; padding: 8px; border: 1px solid var(--p); border-radius: 8px; width: 95%; font-size: 13px; }
+        .btn-group { display: flex; gap: 10px; margin-top: 30px; }
+        button { padding: 15px; border: none; border-radius: 12px; font-weight: bold; cursor: pointer; transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 8px; }
+        .btn-next { background: var(--success); color: white; width: 100%; font-size: 16px; }
+        .btn-save { background: var(--p); color: white; flex: 2; font-size: 16px; }
+        .btn-back { background: #94a3b8; color: white; flex: 1; }
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; font-size: 13px;}
+        table th { background: #f8fafc; text-align: left; padding: 10px; border-bottom: 2px solid #e2e8f0; }
+        table td { padding: 10px; border-bottom: 1px solid #f1f5f9; }
+        
+        /* Menú Hamburguesa */
+        .menu-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+        .hamburger-btn {
+            background: var(--p);
+            color: white;
+            border: none;
+            width: 50px;
+            height: 50px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 20px;
+            box-shadow: 0 4px 10px rgba(2, 132, 199, 0.3);
+            transition: 0.3s;
+        }
+        .hamburger-btn:hover {
+            transform: scale(1.1);
+            background: var(--p-dark);
+        }
+        .menu-content {
+            display: none;
+            position: absolute;
+            top: 60px;
+            left: 0;
+            background: white;
+            min-width: 220px;
+            border-radius: 12px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.1);
+            overflow: hidden;
+            flex-direction: column;
+        }
+        .menu-content.show {
+            display: flex;
+        }
+        .menu-header {
+            padding: 15px;
+            background: #f8fafc;
+            font-size: 11px;
+            font-weight: bold;
+            color: #94a3b8;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+        .menu-content a {
+            text-decoration: none;
+            color: #475569;
+            padding: 14px 20px;
+            font-size: 14px;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            transition: 0.2s;
+        }
+        .menu-content a:hover {
+            background: #f1f5f9;
+            color: var(--p);
+        }
+        .show { display: block !important; }
+    </style>
+</head>
+<body>
+   
+<div class="menu-container">
+    <button class="hamburger-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+    
+    <nav id="myMenu" class="menu-content">
+        <div class="menu-header"> Menu</div>
+        <a href="registro.html"><i class="fas fa-user-plus"></i> Registro de Paciente</a>
+        <a href="citas.html"><i class="fas fa-calendar-check"></i> Nueva Cita</a>
+        <a href="examen.html"><i class="fas fa-stethoscope"></i> Exploración</a>
+        <a href="historial.html"><i class="fas fa-file-medical"></i> Historial</a>
+        <a href="menu.html"><i class="fas fa-home"></i> Inicio</a>
+        <hr> 
+        <a href="perfil.html"><i class="fas fa-user-md"></i> Mi Perfil Profesional</a>
+        <a href="#" onclick="cerrarSesion()" style="color: #ef4444; font-weight: bold;">
+            <i class="fas fa-sign-out-alt"></i> CERRAR SESIÓN
+        </a>
+    </nav>
+</div>
+
+<div class="card">
+    <div id="seccion-datos">
+        <h2><i class="fas fa-address-card"></i> Registro Generales</h2>
+        <div class="grid">
+            <div class="field full">
+                <label>ID Historia Clínica (Automático)</label>
+                <input type="text" id="id_historia_clinica" class="id-view" placeholder="Se generará al escribir..." readonly>
+            </div>
+            <div class="field"><label>Cédula *</label><input type="text" id="cedula" oninput="crearID()"></div>
+            <div class="field"><label>Fecha Nac. *</label><input type="date" id="fecha_nacimiento" onchange="crearID()"></div>
+            <div class="field"><label>Nombres *</label><input type="text" id="nombre" oninput="crearID()"></div>
+            <div class="field"><label>Apellidos *</label><input type="text" id="apellido" oninput="crearID()"></div>
+            <div class="field"><label>Correo</label><input type="email" id="correo"></div>
+            <div class="field"><label>Teléfono</label><input type="text" id="telefono"></div>
+            <div class="field"><label>Sangre</label>
+                <select id="sangre">
+                    <option value="">--</option>
+                    <option value="O+">O+</option><option value="O-">O-</option>
+                    <option value="A+">A+</option><option value="A-">A-</option>
+                    <option value="B+">B+</option><option value="B-">B-</option>
+                    <option value="AB+">AB+</option><option value="AB-">AB-</option>
+                </select>
+            </div>
+            <div class="field"><label>Peso</label><select id="peso"><option value="">--</option><script>for(let i=30; i<=150; i++) document.write(`<option value="${i} kg">${i} kg</option>`);</script></select></div>
+            <div class="field"><label>Talla</label><select id="talla"><option value="">--</option><script>for(let i=130; i<=210; i++) document.write(`<option value="${(i/100).toFixed(2)} m">${(i/100).toFixed(2)} m</option>`);</script></select></div>
+            <div class="field"><label>Ocupación</label><input type="text" id="ocupacion"></div>
+            <div class="field full"><label>Dirección</label><input type="text" id="direccion"></div>
+        </div>
+        <button class="btn-next" onclick="validarYPasar()">Siguiente: Antecedentes <i class="fas fa-arrow-right"></i></button>
+    </div>
+
+    <div id="seccion-antecedentes" style="display:none;">
+        <h2><i class="fas fa-file-medical"></i> 2. Antecedentes Médicos</h2>
+        <div class="medical-panel">
+            <div class="field">
+                <label class="check-item"><input type="checkbox" id="diabetes" onchange="toggleT('diabetes','tipo_diabetes')"> Diabetes</label>
+                <input type="text" id="tipo_diabetes" class="extra-t" placeholder="¿Qué tipo?">
+            </div>
+            <label class="check-item"><input type="checkbox" id="hipertension"> Hipertensión</label>
+            <label class="check-item"><input type="checkbox" id="hipotension"> Hipotensión</label>
+            <label class="check-item"><input type="checkbox" id="epilepsia"> Epilepsia</label>
+            <label class="check-item"><input type="checkbox" id="asma"> Asma</label>
+            <label class="check-item"><input type="checkbox" id="artritis"> Artritis</label>
+            <label class="check-item"><input type="checkbox" id="artrosis"> Artrosis</label>
+            <label class="check-item"><input type="checkbox" id="vih"> VIH</label>
+            <label class="check-item"><input type="checkbox" id="pie_diabetico"> Pie Diabético</label>
+            <label class="check-item"><input type="checkbox" id="ta"> TA</label>
+            <div class="field">
+                <label class="check-item"><input type="checkbox" id="hepatitis" onchange="toggleT('hepatitis','tipo_hepatitis')"> Hepatitis</label>
+                <input type="text" id="tipo_hepatitis" class="extra-t" placeholder="Tipo (A,B,C)">
+            </div>
+            <div class="field">
+                <label class="check-item"><input type="checkbox" id="alergia" onchange="toggleT('alergia','tipo_alergia')"> Alergia</label>
+                <input type="text" id="tipo_alergia" class="extra-t" placeholder="¿A qué?">
+            </div>
+            <label class="check-item"><input type="checkbox" id="lepra"> Lepra</label>
+            <label class="check-item"><input type="checkbox" id="tuberculosis"> Tuberculosis</label>
+            <label class="check-item"><input type="checkbox" id="cardiopatia"> Cardiopatía</label>
+            <label class="check-item"><input type="checkbox" id="hemofilia"> Hemofilia</label>
+            <label class="check-item"><input type="checkbox" id="pie_leproso"> Pie Leproso</label>
+            <label class="check-item"><input type="checkbox" id="sifilis"> Sífilis</label> 
+            <label class="check-item"><input type="checkbox" id="pie_psoriasico"> Pie Psoriásico</label>
+            <label class="check-item"><input type="checkbox" id="pie_geriatrico"> Pie Geriátrico</label>
+            <label class="check-item"><input type="checkbox" id="pie_sifilitico"> Pie Sifilítico</label>
+            <label class="check-item"><input type="checkbox" id="pie_sidoso"> Pie Sidoso</label>
+            <label class="check-item"><input type="checkbox" id="pie_artrosico"> Pie Artrósico</label>
+            <label class="check-item"><input type="checkbox" id="pie_atleta"> Pie de Atleta</label>
+            <div class="field">
+                <label class="check-item"><input type="checkbox" id="otros" onchange="toggleT('otros','tipo_otros')"> otros</label>
+                <input type="text" id="tipo_otros" class="extra-t" placeholder="Especifique...">
+            </div>
+        </div>
+        <div class="btn-group">
+            <button class="btn-back" onclick="irA('seccion-datos')"><i class="fas fa-chevron-left"></i> Volver</button>
+            <button id="btnEditarDirecto" onclick="ejecutarEdicion()" style="background: #0284c7; color: white; display: none;">
+                MODIFICAR REGISTRO <i class="fas fa-edit"></i>
+            </button>
+            <button class="btn-save" id="btnGuardar" onclick="guardar()">FINALIZAR Y GUARDAR <i class="fas fa-save"></i></button>
+        </div>
+    </div>
+
+    <hr style="margin: 40px 0; border: 0; border-top: 1px solid #e2e8f0;">
+
+    <div id="seccion-lista">
+        <h2><i class="fas fa-users"></i> Gestión de Pacientes</h2>
+        <div style="display: flex; gap: 10px; margin-bottom: 20px;">
+            <input type="text" id="busqueda" style="flex: 1;" placeholder="Cédula o Apellido...">
+            <button onclick="buscarPacientes()" style="background: var(--p); color: white;"><i class="fas fa-search"></i></button>
+        </div>
+        <div style="overflow-x: auto;">
+            <table>
+                <thead><tr><th>ID HC</th><th>Paciente</th><th>Cédula</th><th>Acciones</th></tr></thead>
+                <tbody id="tabla-pacientes"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<!-- [MODIFICADO] Script con módulos y SweetAlert2 -->
+<script type="module">
+    // ============================================
+    // IMPORTACIONES (usando tus archivos compartidos)
+    // ============================================
+    import { supabase } from './config.js';
+    import { 
+        verificarSuscripcion, 
+        mostrarLoading, 
+        cerrarSesion as cerrarSesionUtil,
+        notificar,
+        confirmar
+    } from './utils.js';
+// Después de los imports, agrega ESTA línea:
+const originalInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML').set;
+
+Object.defineProperty(Element.prototype, 'innerHTML', {
+    set(value) {
+        const sanitized = window.DOMPurify ? window.DOMPurify.sanitize(value) : value;
+        return originalInnerHTML.call(this, sanitized);
+    }
+});
+    // Hacer disponible cerrarSesion globalmente para el menú
+    window.cerrarSesion = cerrarSesionUtil;
+
+    // ============================================
+    // FUNCIONES DE NAVEGACIÓN (sin cambios)
+    // ============================================
+    function irA(id) {
+        document.getElementById('seccion-datos').style.display = id === 'seccion-datos' ? 'block' : 'none';
+        document.getElementById('seccion-antecedentes').style.display = id === 'seccion-antecedentes' ? 'block' : 'none';
+    }
+window.irA = irA; // 👈 AGREGAR ESTA LÍNEA
+    // [MODIFICADO] Validar y pasar con SweetAlert2
+    function validarYPasar() {
+        if(!document.getElementById('cedula').value || !document.getElementById('nombre').value || !document.getElementById('apellido').value) {
+            notificar('warning', 'Por favor llene los campos obligatorios (Cédula, Nombres, Apellidos)');
+            return;
+        }
+        irA('seccion-antecedentes');
+    }
+window.validarYPasar = validarYPasar; 
+
+    // Función toggleMenu (sin cambios)
+    function toggleMenu() {
+        document.getElementById("myMenu").classList.toggle("show");
+    }
+    window.toggleMenu = toggleMenu;
+
+    // Cerrar menú al hacer clic fuera (sin cambios)
+    document.addEventListener('click', function(event) {
+        const menu = document.getElementById("myMenu");
+        const btn = document.querySelector('.hamburger-btn');
+        if (!menu.contains(event.target) && !btn.contains(event.target)) {
+            menu.classList.remove('show');
+        }
+    });
+
+    // ============================================
+    // GENERAR ID (sin cambios)
+    // ============================================
+   // ============================================
+// GENERAR ID: POD-INICIALES-FECHA-CEDULA-CONTINUO
+// Formato: POD-CALAXE-15032025-720-001
+// ============================================
+async function crearID() {
+    const nombre = document.getElementById('nombre').value;
+    const apellido = document.getElementById('apellido').value;
+    const cedula = document.getElementById('cedula').value;
+    const fechaNac = document.getElementById('fecha_nacimiento').value;
+
+    if (nombre && apellido && cedula && fechaNac) {
+        try {
+            mostrarLoading(true);
+            
+            // 1. INICIALES: 3 apellido + 3 nombre
+            const n = nombre.substring(0, 3).toUpperCase().padEnd(3, 'X');
+            const a = apellido.substring(0, 3).toUpperCase().padEnd(3, 'X');
+            const iniciales = a + n; // Ej: CALAXE
+            
+            // 2. FECHA ACTUAL (DDMMYYYY)
+            const hoy = new Date();
+            const dia = hoy.getDate().toString().padStart(2, '0');
+            const mes = (hoy.getMonth() + 1).toString().padStart(2, '0');
+            const año = hoy.getFullYear();
+            const fechaActual = `${dia}${mes}${año}`; // 15032025
+            
+            // 3. ÚLTIMOS 3 DÍGITOS DE CÉDULA
+            const ultimosCedula = cedula.slice(-3).padStart(3, '0'); // 720
+            
+            // 4. BUSCAR EL ÚLTIMO NÚMERO CONTINUO USADO HOY
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            // Buscar pacientes con el mismo patrón hoy
+            const { data: pacientes } = await supabase
+                .from('pacientes')
+                .select('id_historia_clinica')
+                .eq('doctor_id', user.id)
+                .like('id_historia_clinica', `POD-${iniciales}-${fechaActual}-${ultimosCedula}-%`);
+            
+            let continuo = 1;
+            if (pacientes && pacientes.length > 0) {
+                // Encontrar el número continuo más alto usado hoy
+                let maxContinuo = 0;
+                pacientes.forEach(p => {
+                    const partes = p.id_historia_clinica.split('-');
+                    if (partes.length === 5) {
+                        const num = parseInt(partes[4], 10);
+                        if (!isNaN(num) && num > maxContinuo) {
+                            maxContinuo = num;
+                        }
+                    }
+                });
+                continuo = maxContinuo + 1;
+            }
+            
+            // Limitar a 3 dígitos (001-999)
+            if (continuo > 999) continuo = 1;
+            
+            mostrarLoading(false);
+            
+            // 5. ID FINAL: POD-CALAXE-15032025-720-001
+            const id = `POD-${iniciales}-${fechaActual}-${continuo.toString().padStart(3, '0')}-${ultimosCedula}`;
+            
+            document.getElementById('id_historia_clinica').value = id;
+            console.log('✅ ID generado:', id);
+            
+        } catch (error) {
+            mostrarLoading(false);
+            console.error('Error generando ID:', error);
+            
+            // Fallback por si algo falla
+            const id = `POD-${Math.random().toString(36).substring(2, 8).toUpperCase()}-${new Date().toLocaleDateString('es').replace(/\//g, '')}-${cedula.slice(-3)}-${Math.floor(Math.random()*900+100)}`;
+            document.getElementById('id_historia_clinica').value = id;
+        }
+    }
+}
+
+    window.crearID = crearID;
+
+    // ============================================
+    // TOGGLE PARA CAMPOS EXTRA (sin cambios)
+    // ============================================
+    function toggleT(checkboxId, inputId) {
+        const checkbox = document.getElementById(checkboxId);
+        const input = document.getElementById(inputId);
+        
+        if (checkbox && input) {
+            if (checkbox.checked) {
+                input.style.display = 'block';
+            } else {
+                input.style.display = 'none';
+                input.value = '';
+            }
+        }
+    }
+    window.toggleT = toggleT;
+
+    // ============================================
+    // GUARDAR PACIENTE (MODIFICADO con notificaciones)
+    // ============================================
+    async function guardar() {
+        const { data: { user } } = await supabase.auth.getUser();
+
+        if (!user) {
+            notificar('error', 'Sesión expirada');
+            window.location.href = "index.html";
+            return;
+        }
+
+        const btn = document.getElementById('btnGuardar');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+
+        const idHistoria = document.getElementById('id_historia_clinica').value;
+        
+        if (!idHistoria || idHistoria === 'POD---') {
+            notificar('error', 'Complete todos los campos obligatorios primero');
+            btn.disabled = false;
+            btn.innerHTML = 'FINALIZAR Y GUARDAR <i class="fas fa-save"></i>';
+            return;
+        }
+
+        function getChecked(id) {
+            const el = document.getElementById(id);
+            return el ? el.checked : false;
+        }
+
+        function getValue(id) {
+            const el = document.getElementById(id);
+            return el ? el.value || null : null;
+        }
+
+        const d = {
+            doctor_id: user.id,
+            id_historia_clinica: idHistoria,
+            cedula: document.getElementById('cedula').value,
+            nombre: document.getElementById('nombre').value,
+            apellido: document.getElementById('apellido').value,
+            fecha_nacimiento: getValue('fecha_nacimiento'),
+            correo: getValue('correo'),
+            telefono: getValue('telefono'),
+            sangre: getValue('sangre'),
+            peso: getValue('peso'),
+            talla: getValue('talla'),
+            ocupacion: getValue('ocupacion'),
+            direccion: getValue('direccion'),
+            
+            diabetes: getChecked('diabetes'),
+            tipo_diabetes: getValue('tipo_diabetes'),
+            cardiopatia: getChecked('cardiopatia'),
+            hipertension: getChecked('hipertension'),
+            hipotension: getChecked('hipotension'),
+            epilepsia: getChecked('epilepsia'),
+            asma: getChecked('asma'),
+            artritis: getChecked('artritis'),
+            artrosis: getChecked('artrosis'),
+            hemofilia: getChecked('hemofilia'),
+            vih: getChecked('vih'),
+            pie_diabetico: getChecked('pie_diabetico'),
+            ta: getChecked('ta'),
+            alergia: getChecked('alergia'),
+            tipo_alergia: getValue('tipo_alergia'),
+            pie_leproso: getChecked('pie_leproso'),
+            sifilis: getChecked('sifilis'),
+            pie_psoriasico: getChecked('pie_psoriasico'),
+            lepra: getChecked('lepra'),
+            pie_geriatrico: getChecked('pie_geriatrico'),
+            pie_sifilitico: getChecked('pie_sifilitico'),
+            pie_sidoso: getChecked('pie_sidoso'),
+            pie_artrosico: getChecked('pie_artrosico'),
+            hepatitis: getChecked('hepatitis'),
+            tipo_hepatitis: getValue('tipo_hepatitis'),
+            pie_atleta: getChecked('pie_atleta'),
+            tuberculosis: getChecked('tuberculosis'),
+            otros: getChecked('otros'),
+            tipo_otros: getValue('tipo_otros')
+        };
+
+        try {
+            mostrarLoading(true);
+            const { error } = await supabase.from('pacientes').insert([d]);
+            mostrarLoading(false);
+            
+            if (error) {
+                if(error.code === "23505") {
+                    throw new Error("El ID de Historia Clínica o Cédula ya existe.");
+                }
+                throw error;
+            }
+
+            notificar('exito', 'Paciente guardado correctamente');
+            setTimeout(() => location.reload(), 1500);
+
+        } catch (err) {
+            mostrarLoading(false);
+            notificar('error', 'Error al guardar: ' + err.message);
+            console.error("Detalle del error:", err);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'FINALIZAR Y GUARDAR <i class="fas fa-save"></i>';
+        }
+    }
+    window.guardar = guardar;
+
+    // ============================================
+    // BUSCAR PACIENTES (MODIFICADO)
+    // ============================================
+    async function buscarPacientes() {
+        const term = document.getElementById('busqueda').value;
+        
+        mostrarLoading(true);
+        const { data: { user } } = await supabase.auth.getUser();
+        const { data, error } = await supabase.from('pacientes')
+            .select('*')
+            .eq('doctor_id', user.id)
+            .or(`cedula.ilike.%${term}%,apellido.ilike.%${term}%`);
+        mostrarLoading(false);
+        
+        if (error) {
+            notificar('error', 'Error: ' + error.message);
+            return;
+        }
+        
+        const tbody = document.getElementById('tabla-pacientes');
+        
+        if (!data || data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="4" style="text-align:center;">No hay pacientes</td></tr>';
+            return;
+        }
+        
+        tbody.innerHTML = data.map(p => `
+            <tr>
+                <td><b style="color:var(--p)">${p.id_historia_clinica}</b></td>
+                <td>${p.apellido} ${p.nombre}</td>
+                <td>${p.cedula}</td>
+                <td>
+                    <div style="display: flex; gap: 10px;">
+                        <button onclick="cargarParaEditar('${p.id_historia_clinica}')" 
+                                style="background: #0284c7; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer;">
+                            <i class="fas fa-edit"></i>
+                        </button>
+                        <button onclick="eliminarPaciente('${p.id_historia_clinica}')" 
+                                style="background: #ef4444; color: white; border: none; padding: 8px 12px; border-radius: 8px; cursor: pointer;">
+                            <i class="fas fa-trash"></i>
+                        </button>
+                    </div>
+                </td>
+            </tr>
+        `).join('');
+    }
+    window.buscarPacientes = buscarPacientes;
+
+    // ============================================
+    // CARGAR PARA EDITAR (MODIFICADO)
+    // ============================================
+    async function cargarParaEditar(id) {
+        try {
+            mostrarLoading(true);
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            const { data, error } = await supabase
+                .from('pacientes')
+                .select('*')
+                .eq('id_historia_clinica', id)
+                .eq('doctor_id', user.id)
+                .single();
+            
+            mostrarLoading(false);
+
+            if (error) {
+                notificar('error', 'Error al obtener datos: ' + error.message);
+                return;
+            }
+
+            // DATOS GENERALES
+            document.getElementById('id_historia_clinica').value = data.id_historia_clinica;
+            document.getElementById('cedula').value = data.cedula;
+            document.getElementById('nombre').value = data.nombre;
+            document.getElementById('apellido').value = data.apellido;
+            document.getElementById('fecha_nacimiento').value = data.fecha_nacimiento;
+            document.getElementById('correo').value = data.correo || '';
+            document.getElementById('telefono').value = data.telefono || '';
+            document.getElementById('direccion').value = data.direccion || '';
+            document.getElementById('sangre').value = data.sangre || '';
+            document.getElementById('peso').value = data.peso || '';
+            document.getElementById('talla').value = data.talla || '';
+            document.getElementById('ocupacion').value = data.ocupacion || '';
+
+            // ANTECEDENTES
+            const checks = [
+                'diabetes', 'hipertension', 'hipotension', 'epilepsia', 'asma', 
+                'artritis', 'artrosis', 'vih', 'pie_diabetico', 'ta', 'hepatitis', 
+                'alergia', 'lepra', 'tuberculosis', 'cardiopatia', 'hemofilia', 
+                'pie_leproso', 'sifilis', 'pie_psoriasico', 'pie_geriatrico', 
+                'pie_sifilitico', 'pie_sidoso', 'pie_artrosico', 'pie_atleta', 'otros'
+            ];
+
+            checks.forEach(idCheck => {
+                const el = document.getElementById(idCheck);
+                if(el) el.checked = data[idCheck] || false;
+            });
+
+            // CAMPOS EXTRA
+            toggleT('diabetes', 'tipo_diabetes');
+            document.getElementById('tipo_diabetes').value = data.tipo_diabetes || '';
+            
+            toggleT('hepatitis', 'tipo_hepatitis');
+            document.getElementById('tipo_hepatitis').value = data.tipo_hepatitis || '';
+            
+            toggleT('alergia', 'tipo_alergia');
+            document.getElementById('tipo_alergia').value = data.tipo_alergia || '';
+            
+            toggleT('otros', 'tipo_otros');
+            document.getElementById('tipo_otros').value = data.tipo_otros || '';
+
+            // NAVEGACIÓN
+            irA('seccion-datos');
+            document.getElementById('btnGuardar').style.display = 'none';
+            document.getElementById('btnEditarDirecto').style.display = 'inline-block';
+            window.scrollTo(0,0);
+            
+        } catch (err) {
+            mostrarLoading(false);
+            notificar('error', 'Error al cargar: ' + err.message);
+        }
+    }
+    window.cargarParaEditar = cargarParaEditar;
+
+    // ============================================
+    // EJECUTAR EDICIÓN (MODIFICADO)
+    // ============================================
+    async function ejecutarEdicion() {
+        const idHC = document.getElementById('id_historia_clinica').value;
+        const btn = document.getElementById('btnEditarDirecto');
+        
+        btn.disabled = true;
+        btn.innerHTML = 'Actualizando...';
+
+        function getChecked(id) {
+            const el = document.getElementById(id);
+            return el ? el.checked : false;
+        }
+
+        function getValue(id) {
+            const el = document.getElementById(id);
+            return el ? el.value || null : null;
+        }
+
+        const d = {
+            cedula: getValue('cedula'),
+            nombre: getValue('nombre'),
+            apellido: getValue('apellido'),
+            fecha_nacimiento: getValue('fecha_nacimiento'),
+            correo: getValue('correo'),
+            telefono: getValue('telefono'),
+            sangre: getValue('sangre'),
+            ocupacion: getValue('ocupacion'),
+            direccion: getValue('direccion'),
+            peso: getValue('peso'),
+            talla: getValue('talla'),
+            
+            diabetes: getChecked('diabetes'),
+            tipo_diabetes: getValue('tipo_diabetes'),
+            cardiopatia: getChecked('cardiopatia'),
+            hipertension: getChecked('hipertension'),
+            hipotension: getChecked('hipotension'),
+            epilepsia: getChecked('epilepsia'),
+            asma: getChecked('asma'),
+            artritis: getChecked('artritis'),
+            artrosis: getChecked('artrosis'),
+            hemofilia: getChecked('hemofilia'),
+            vih: getChecked('vih'),
+            pie_diabetico: getChecked('pie_diabetico'),
+            ta: getChecked('ta'),
+            alergia: getChecked('alergia'),
+            tipo_alergia: getValue('tipo_alergia'),
+            pie_leproso: getChecked('pie_leproso'),
+            sifilis: getChecked('sifilis'),
+            pie_psoriasico: getChecked('pie_psoriasico'),
+            lepra: getChecked('lepra'),
+            pie_geriatrico: getChecked('pie_geriatrico'),
+            pie_sifilitico: getChecked('pie_sifilitico'),
+            pie_sidoso: getChecked('pie_sidoso'),
+            pie_artrosico: getChecked('pie_artrosico'),
+            hepatitis: getChecked('hepatitis'),
+            tipo_hepatitis: getValue('tipo_hepatitis'),
+            pie_atleta: getChecked('pie_atleta'),
+            tuberculosis: getChecked('tuberculosis'),
+            otros: getChecked('otros'),
+            tipo_otros: getValue('tipo_otros')
+        };
+
+        try {
+            mostrarLoading(true);
+            const { error } = await supabase.from('pacientes').update(d).eq('id_historia_clinica', idHC);
+            mostrarLoading(false);
+            
+            if (error) throw error;
+            
+            notificar('exito', 'Registro actualizado correctamente');
+            setTimeout(() => location.reload(), 1500);
+            
+        } catch (err) {
+            mostrarLoading(false);
+            notificar('error', 'Error al actualizar: ' + err.message);
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = 'MODIFICAR REGISTRO <i class="fas fa-edit"></i>';
+        }
+    }
+    window.ejecutarEdicion = ejecutarEdicion;
+
+    // ============================================
+    // ELIMINAR PACIENTE (MODIFICADO con confirmación)
+    // ============================================
+    async function eliminarPaciente(id) {
+        // [MODIFICADO] Usar confirmar de utils.js
+        const confirmado = await confirmar('¿Eliminar este paciente? Todos sus datos se perderán');
+        if (!confirmado) return;
+        
+        mostrarLoading(true);
+        const { error } = await supabase.from('pacientes').delete().eq('id_historia_clinica', id);
+        mostrarLoading(false);
+        
+        if (error) {
+            notificar('error', 'Error: ' + error.message);
+        } else {
+            notificar('exito', 'Paciente eliminado');
+            buscarPacientes();
+        }
+    }
+    window.eliminarPaciente = eliminarPaciente;
+
+    // ============================================
+    // INICIALIZACIÓN (MODIFICADO con verificarSuscripcion)
+    // ============================================
+    window.onload = async () => {
+        mostrarLoading(true);
+        
+        // [MODIFICADO] Usar verificarSuscripcion de utils.js
+        const accesoPermitido = await verificarSuscripcion();
+        if (!accesoPermitido) {
+            mostrarLoading(false);
+            return;
+        }
+        
+        await buscarPacientes();
+        mostrarLoading(false);
+    };
+</script>
+</body>
+</html>

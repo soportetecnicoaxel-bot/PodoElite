@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>PodoElite | Nueva Clave</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root { --accent: #06b6d4; --bg: #0a0a0c; --card: #141417; }
+        body { background: var(--bg); color: #fff; font-family: sans-serif; display: flex; align-items: center; justify-content: center; min-height: 100vh; margin: 0; }
+        .card { background: var(--card); padding: 35px; border-radius: 20px; width: 100%; max-width: 360px; border: 1px solid #222; text-align: center; }
+        input { width: 100%; padding: 12px; margin-bottom: 15px; background: #1c1c20; border: 1px solid #333; color: white; border-radius: 10px; box-sizing: border-box; outline: none; }
+        .btn { width: 100%; padding: 14px; background: #06b6d4; color: black; border: none; border-radius: 10px; font-weight: bold; cursor: pointer; width: 100%; }
+        .mensaje { font-size: 0.8rem; margin-bottom: 20px; color: #888; }
+    </style>
+    <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'unsafe-inline';
+    style-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline';
+    img-src 'self' data: https://qagxnpmztawislaehkfa.supabase.co;
+    connect-src 'self' https://qagxnpmztawislaehkfa.supabase.co;
+    font-src 'self' https://cdnjs.cloudflare.com;
+">
+</head>
+<body>
+
+<div class="card">
+    <h2>Nueva Contraseña</h2>
+    <p class="mensaje" id="status-msg">Cargando sesión de seguridad...</p>
+    
+    <div id="formulario" style="display: none;">
+        <input type="password" id="nueva-p" placeholder="Nueva contraseña (8+ carac.)">
+        <input type="password" id="conf-p" placeholder="Confirmar contraseña">
+        <button class="btn" onclick="actualizarClave()">GUARDAR CAMBIOS</button>
+    </div>
+</div>
+
+<script type="module">
+    // ============================================
+    // IMPORTACIONES
+    // ============================================
+    import { supabase } from './config.js';
+    import { mostrarLoading, notificar } from './utils.js';
+
+
+
+    // Después de los imports, agrega ESTA línea:
+const originalInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML').set;
+
+Object.defineProperty(Element.prototype, 'innerHTML', {
+    set(value) {
+        const sanitized = window.DOMPurify ? window.DOMPurify.sanitize(value) : value;
+        return originalInnerHTML.call(this, sanitized);
+    }
+});
+    // ============================================
+    // DETECTAR SESIÓN
+    // ============================================
+    window.onload = async () => {
+        mostrarLoading(true);
+        const { data, error } = await supabase.auth.getSession();
+        mostrarLoading(false);
+        
+        if (data.session) {
+            document.getElementById('status-msg').innerText = "Sesión verificada. Ingresa tu nueva clave.";
+            document.getElementById('formulario').style.display = 'block';
+        } else {
+            document.getElementById('status-msg').innerHTML = "<span style='color:red;'>El enlace ha caducado o es inválido. Solicita uno nuevo en el Login.</span>";
+        }
+    };
+
+    // ============================================
+    // ACTUALIZAR CONTRASEÑA
+    // ============================================
+    window.actualizarClave = async function() {
+        const p1 = document.getElementById('nueva-p').value;
+        const p2 = document.getElementById('conf-p').value;
+
+        if (p1.length < 8) {
+            notificar('warning', 'La clave debe tener al menos 8 caracteres');
+            return;
+        }
+        if (p1 !== p2) {
+            notificar('warning', 'Las contraseñas no coinciden');
+            return;
+        }
+
+        mostrarLoading(true);
+        const { error } = await supabase.auth.updateUser({ password: p1 });
+        mostrarLoading(false);
+
+        if (error) {
+            notificar('error', 'Error al actualizar: ' + error.message);
+        } else {
+            notificar('exito', '¡Contraseña cambiada! Ahora puedes entrar con tu nueva clave.');
+            setTimeout(() => {
+                window.location.href = "index.html";
+            }, 2000);
+        }
+    };
+</script>
+</body>
+</html>

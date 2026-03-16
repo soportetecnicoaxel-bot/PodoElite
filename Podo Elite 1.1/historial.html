@@ -1,0 +1,1311 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+   
+
+
+ <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PodoElite Pro - Historial Clínico</title>
+    
+    <!-- CSP (Seguridad) -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'unsafe-inline';
+        style-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline';
+        img-src 'self' data: https://qagxnpmztawislaehkfa.supabase.co;
+        connect-src 'self' https://qagxnpmztawislaehkfa.supabase.co;
+        font-src 'self' https://cdnjs.cloudflare.com;
+    ">
+    
+    <!-- Librerías -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0284c7;
+            --primary-dark: #0369a1;
+            --primary-light: #e0f2fe;
+            --secondary: #64748b;
+            --success: #10b981;
+            --danger: #ef4444;
+            --light: #f8fafc;
+            --dark: #1e293b;
+            --border: #e2e8f0;
+            --shadow: 0 10px 30px rgba(0,0,0,0.05);
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            padding: 20px;
+            min-height: 100vh;
+        }
+
+        /* Menú Hamburguesa */
+        .menu-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+
+        .hamburger-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 55px;
+            height: 55px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(2,132,199,0.3);
+            transition: all 0.3s;
+        }
+
+        .hamburger-btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05) rotate(90deg);
+        }
+
+        .menu-content {
+            display: none;
+            position: absolute;
+            top: 65px;
+            left: 0;
+            background: white;
+            min-width: 280px;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            overflow: hidden;
+            flex-direction: column;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .menu-content.show {
+            display: flex;
+        }
+
+        .menu-header {
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            font-weight: bold;
+        }
+
+        .menu-content a {
+            text-decoration: none;
+            color: var(--dark);
+            padding: 15px 25px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+
+        .menu-content a i {
+            width: 20px;
+            color: var(--primary);
+        }
+
+        .menu-content a:hover {
+            background: var(--primary-light);
+            padding-left: 35px;
+        }
+
+        .menu-content a.active {
+            background: var(--primary-light);
+            color: var(--primary);
+            border-left: 4px solid var(--primary);
+        }
+
+        .menu-content hr {
+            margin: 8px 0;
+            border: none;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Contenedor principal */
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            margin-left: 100px;
+        }
+
+        /* Header */
+        .header {
+            background: white;
+            border-radius: 20px;
+            padding: 25px 30px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header h1 {
+            color: var(--dark);
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header h1 i {
+            color: var(--primary);
+        }
+
+        .doctor-badge {
+            background: var(--primary-light);
+            padding: 12px 25px;
+            border-radius: 50px;
+            color: var(--primary);
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            border: 2px solid white;
+            box-shadow: 0 4px 10px rgba(2,132,199,0.1);
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .doctor-badge:hover {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Sección de búsqueda */
+        .search-section {
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            margin-bottom: 25px;
+            box-shadow: var(--shadow);
+        }
+
+        .search-title {
+            color: var(--dark);
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1.2rem;
+        }
+
+        .search-box {
+            display: flex;
+            gap: 15px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 250px;
+            padding: 16px 20px;
+            border: 2px solid var(--border);
+            border-radius: 16px;
+            font-size: 1rem;
+            transition: all 0.3s;
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(2,132,199,0.1);
+        }
+
+        .search-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0 30px;
+            border-radius: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            transition: all 0.3s;
+        }
+
+        .search-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(2,132,199,0.3);
+        }
+
+        .clear-btn {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            padding: 0 25px;
+            border-radius: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+
+        .clear-btn:hover {
+            background: #475569;
+            transform: translateY(-2px);
+        }
+
+        /* Información del paciente */
+        .patient-info {
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            border-radius: 20px;
+            padding: 30px;
+            margin-bottom: 25px;
+            color: white;
+            display: none;
+            box-shadow: 0 10px 30px rgba(2,132,199,0.2);
+        }
+
+        .patient-info.show {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .patient-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            flex-wrap: wrap;
+            gap: 15px;
+        }
+
+        .patient-name {
+            font-size: 2rem;
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .patient-name i {
+            font-size: 2.5rem;
+            background: rgba(255,255,255,0.2);
+            padding: 15px;
+            border-radius: 15px;
+        }
+
+        .patient-badge {
+            background: rgba(255,255,255,0.2);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 1rem;
+        }
+
+        .patient-details {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            background: rgba(255,255,255,0.1);
+            padding: 20px;
+            border-radius: 15px;
+        }
+
+        .detail-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .detail-item i {
+            font-size: 1.2rem;
+            width: 25px;
+        }
+
+        .detail-item .label {
+            font-size: 0.8rem;
+            opacity: 0.8;
+            display: block;
+        }
+
+        .detail-item .value {
+            font-size: 1.1rem;
+            font-weight: 600;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 25px;
+            flex-wrap: wrap;
+        }
+
+        .tab {
+            padding: 12px 30px;
+            background: white;
+            border: none;
+            border-radius: 50px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .tab:hover {
+            background: var(--primary-light);
+            transform: translateY(-2px);
+        }
+
+        .tab.active {
+            background: var(--primary);
+            color: white;
+        }
+
+        /* Contenido de tabs */
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+            animation: fadeIn 0.5s ease;
+        }
+
+        /* Timeline para citas */
+        .timeline {
+            position: relative;
+            padding-left: 30px;
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            left: 0;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background: var(--primary-light);
+        }
+
+        .timeline-item {
+            position: relative;
+            padding: 20px;
+            background: white;
+            border-radius: 15px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            margin-left: 30px;
+            transition: all 0.3s;
+        }
+
+        .timeline-item:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(2,132,199,0.1);
+        }
+
+        .timeline-item::before {
+            content: '';
+            position: absolute;
+            left: -44px;
+            top: 30px;
+            width: 15px;
+            height: 15px;
+            border-radius: 50%;
+            background: var(--primary);
+            border: 3px solid white;
+            box-shadow: 0 0 0 2px var(--primary-light);
+        }
+
+        .timeline-date {
+            color: var(--primary);
+            font-weight: 600;
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .timeline-title {
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+            color: var(--dark);
+        }
+
+        .timeline-content {
+            color: var(--secondary);
+            line-height: 1.6;
+        }
+
+        .timeline-tags {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .tag {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            font-weight: 600;
+        }
+
+        /* Tarjetas de exploración */
+        .exploracion-card {
+            background: white;
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+            transition: all 0.3s;
+        }
+
+        .exploracion-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 10px 30px rgba(2,132,199,0.1);
+        }
+
+        .exploracion-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .exploracion-id {
+            background: var(--primary-light);
+            color: var(--primary);
+            padding: 5px 15px;
+            border-radius: 50px;
+            font-weight: 600;
+            font-size: 0.9rem;
+        }
+
+        .exploracion-fecha {
+            color: var(--secondary);
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .exploracion-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 10px;
+            margin: 15px 0;
+        }
+
+        .exploracion-item {
+            background: var(--light);
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+        }
+
+        .exploracion-item strong {
+            color: var(--primary);
+            margin-right: 5px;
+        }
+
+        /* Botones de acción */
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 10px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #0ca678;
+            transform: translateY(-2px);
+        }
+
+        /* Mensajes sin resultados */
+        .no-results {
+            text-align: center;
+            padding: 50px;
+            background: white;
+            border-radius: 20px;
+            color: var(--secondary);
+        }
+
+        .no-results i {
+            font-size: 4rem;
+            color: var(--primary-light);
+            margin-bottom: 20px;
+        }
+
+        /* Loading overlay */
+        .loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(5px);
+        }
+
+        .loader {
+            width: 70px;
+            height: 70px;
+            border: 8px solid var(--primary-light);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Pantalla de suspensión */
+        .suspension-screen {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: white;
+            padding: 20px;
+            z-index: 10000;
+        }
+
+        .suspension-screen i {
+            font-size: 5rem;
+            margin-bottom: 20px;
+        }
+
+        .suspension-screen h1 {
+            font-size: 2.5rem;
+            margin-bottom: 20px;
+        }
+
+        .suspension-screen p {
+            font-size: 1.2rem;
+            margin-bottom: 40px;
+            max-width: 500px;
+            opacity: 0.9;
+        }
+
+        .suspension-screen button {
+            padding: 16px 40px;
+            background: white;
+            color: #333;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0,0,0,0.2);
+            transition: all 0.3s;
+        }
+
+        .suspension-screen button:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 30px rgba(0,0,0,0.3);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container {
+                margin-left: 20px;
+            }
+            
+            .search-box {
+                flex-direction: column;
+            }
+            
+            .patient-name {
+                font-size: 1.5rem;
+            }
+            
+            .tabs {
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Loading Overlay -->
+<div class="loading-overlay" id="loadingOverlay">
+    <div class="loader"></div>
+</div>
+
+<!-- Menú Hamburguesa -->
+<div class="menu-container">
+    <button class="hamburger-btn" onclick="toggleMenu()">
+        <i class="fas fa-bars"></i>
+    </button>
+    
+    <nav id="myMenu" class="menu-content">
+        <div class="menu-header">
+            <i class="fas fa-clinic-medical"></i> PodoElite Pro
+        </div>
+        
+        <a href="menu.html"><i class="fas fa-home"></i> Inicio</a>
+        <a href="registro.html"><i class="fas fa-user-plus"></i> Registro Pacientes</a>
+        <a href="citas.html"><i class="fas fa-calendar-check"></i> Gestión de Citas</a>
+        <a href="examen.html"><i class="fas fa-stethoscope"></i> Exploración</a>
+        <a href="historial.html" class="active"><i class="fas fa-file-medical"></i> Historial Clínico</a>
+        
+        <hr>
+        <a href="menu.html"><i class="fas fa-home"></i> Inicio</a>
+        <a href="perfil.html"><i class="fas fa-user-md"></i> Mi Perfil Profesional</a>
+        <a href="#" onclick="cerrarSesion()" style="color: var(--danger); font-weight: bold;">
+            <i class="fas fa-sign-out-alt"></i> CERRAR SESIÓN
+        </a>
+    </nav>
+</div>
+
+<div class="container">
+    <!-- Header -->
+    <div class="header">
+        <h1>
+            <i class="fas fa-file-medical"></i>
+            Historial Clínico
+        </h1>
+        <div class="doctor-badge" onclick="window.location.href='perfil.html'">
+            <i class="fas fa-user-md"></i>
+            <span id="doctorName">Dr. Nombre</span>
+        </div>
+    </div>
+
+    <!-- Buscador -->
+    <div class="search-section">
+        <div class="search-title">
+            <i class="fas fa-search"></i>
+            Buscar Paciente por Cédula
+        </div>
+        <div class="search-box">
+            <input type="text" id="searchInput" class="search-input" 
+                   placeholder="Ingrese la cédula del paciente..."
+                   onkeypress="if(event.key==='Enter') buscarPaciente()">
+            <button class="search-btn" onclick="buscarPaciente()">
+                <i class="fas fa-search"></i> Buscar
+            </button>
+            <button class="clear-btn" onclick="limpiarBusqueda()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+    </div>
+
+    <!-- Información del Paciente -->
+    <div class="patient-info" id="patientInfo">
+        <div class="patient-header">
+            <div class="patient-name">
+                <i class="fas fa-user-circle"></i>
+                <span id="patientFullName"></span>
+            </div>
+            <div class="patient-badge" id="patientId"></div>
+        </div>
+        <div class="patient-details">
+            <div class="detail-item">
+                <i class="fas fa-id-card"></i>
+                <div>
+                    <span class="label">Cédula</span>
+                    <span class="value" id="patientCedula"></span>
+                </div>
+            </div>
+            <div class="detail-item">
+                <i class="fas fa-calendar-alt"></i>
+                <div>
+                    <span class="label">Fecha Nac.</span>
+                    <span class="value" id="patientBirth"></span>
+                </div>
+            </div>
+            <div class="detail-item">
+                <i class="fas fa-tint"></i>
+                <div>
+                    <span class="label">Sangre</span>
+                    <span class="value" id="patientBlood"></span>
+                </div>
+            </div>
+            <div class="detail-item">
+                <i class="fas fa-phone"></i>
+                <div>
+                    <span class="label">Teléfono</span>
+                    <span class="value" id="patientPhone"></span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs" id="tabsContainer" style="display: none;">
+        <button class="tab active" onclick="cambiarTab('citas', this)">
+            <i class="fas fa-calendar-check"></i> Citas
+        </button>
+        <button class="tab" onclick="cambiarTab('exploraciones', this)">
+            <i class="fas fa-stethoscope"></i> Exploraciones
+        </button>
+        <button class="tab" onclick="cambiarTab('antecedentes', this)">
+            <i class="fas fa-notes-medical"></i> Antecedentes
+        </button>
+        <button class="tab" onclick="cambiarTab('completo', this)">
+            <i class="fas fa-file-pdf"></i> Informe Completo
+        </button>
+    </div>
+
+    <!-- Contenido Citas -->
+    <div class="tab-content active" id="tabCitas">
+        <div class="timeline" id="citasTimeline"></div>
+    </div>
+
+    <!-- Contenido Exploraciones -->
+    <div class="tab-content" id="tabExploraciones">
+        <div id="exploracionesList"></div>
+    </div>
+
+    <!-- Contenido Antecedentes -->
+    <div class="tab-content" id="tabAntecedentes">
+        <div class="exploracion-card" id="antecedentesContent"></div>
+    </div>
+
+    <!-- Contenido Informe Completo -->
+    <div class="tab-content" id="tabCompleto">
+        <div style="text-align: center; padding: 40px;">
+            <button class="btn btn-success" onclick="generarInformeCompleto()" style="font-size: 1.2rem; padding: 20px 40px;">
+                <i class="fas fa-file-pdf"></i> GENERAR INFORME COMPLETO EN PDF
+            </button>
+        </div>
+    </div>
+</div>
+<script type="module">
+    // ============================================
+    // IMPORTACIONES (archivos compartidos)
+    // ============================================
+    import { supabase } from './config.js';
+    import { 
+        verificarSuscripcion, 
+        mostrarLoading, 
+        cerrarSesion as cerrarSesionUtil,
+        notificar,
+        confirmar 
+    } from './utils.js';
+    
+    // Importar funciones PDF
+    import { generarPDFCita } from './js/pdf/pdfCita.js';
+    import { generarPDFExploracion } from './js/pdf/pdfExploracion.js';
+    import { generarInformeCompleto } from './js/pdf/pdfInformeCompleto.js';
+ // Después de los imports, agrega ESTA línea:
+const originalInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML').set;
+
+    // ============================================
+    // VARIABLES GLOBALES
+    // ============================================
+    let currentPaciente = null;
+    let currentTab = 'citas';
+
+    // ============================================
+    // HACER FUNCIONES GLOBALES PARA EL HTML
+    // ============================================
+    window.cerrarSesion = cerrarSesionUtil;
+    window.generarPDFCita = generarPDFCita;
+    window.generarPDFExploracion = generarPDFExploracion;
+    window.generarInformeCompleto = generarInformeCompleto;
+
+
+
+   
+Object.defineProperty(Element.prototype, 'innerHTML', {
+    set(value) {
+        const sanitized = window.DOMPurify ? window.DOMPurify.sanitize(value) : value;
+        return originalInnerHTML.call(this, sanitized);
+    }
+});
+    // ============================================
+    // FUNCIONES DE UTILIDAD
+    // ============================================
+    window.toggleMenu = function() {
+        document.getElementById('myMenu').classList.toggle('show');
+    }
+
+    document.addEventListener('click', function(event) {
+        const menu = document.getElementById('myMenu');
+        const btn = document.querySelector('.hamburger-btn');
+        if (btn && !btn.contains(event.target) && menu && !menu.contains(event.target)) {
+            menu.classList.remove('show');
+        }
+    });
+
+    // ============================================
+    // CARGAR DOCTOR
+    // ============================================
+    async function cargarDoctor() {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) {
+                window.location.href = 'index.html';
+                return;
+            }
+            const { data: perfil } = await supabase
+                .from('perfiles')
+                .select('nombre_doctor')
+                .eq('id', user.id)
+                .single();
+            
+            if (perfil) {
+                document.getElementById('doctorName').textContent = perfil.nombre_doctor || 'Dr. Nombre';
+            }
+        } catch (error) {
+            console.error('Error al cargar doctor:', error);
+        }
+    }
+
+    // ============================================
+    // BUSCAR PACIENTE
+    // ============================================
+    window.buscarPaciente = async function() {
+        const cedula = document.getElementById('searchInput').value.trim();
+        
+        if (!cedula) {
+            notificar('warning', 'Ingrese la cédula del paciente');
+            return;
+        }
+        
+        if (!/^\d+$/.test(cedula)) {
+            notificar('warning', 'La cédula debe contener solo números');
+            return;
+        }
+        
+        mostrarLoading(true);
+
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            const { data, error } = await supabase
+                .from('pacientes')
+                .select('*')
+                .eq('doctor_id', user.id)
+                .eq('cedula', cedula);
+
+            if (error) throw error;
+
+            if (!data || data.length === 0) {
+                notificar('error', 'Paciente no encontrado');
+                mostrarLoading(false);
+                return;
+            }
+
+            currentPaciente = data[0];
+            await mostrarPaciente();
+
+        } catch (err) {
+            console.error(err);
+            notificar('error', 'Error al buscar paciente');
+            mostrarLoading(false);
+        }
+    }
+window.buscarPaciente = buscarPaciente;
+    // ============================================
+    // MOSTRAR PACIENTE
+    // ============================================
+    async function mostrarPaciente() {
+        if (!currentPaciente) return;
+        
+        document.getElementById('patientInfo').classList.add('show');
+        document.getElementById('tabsContainer').style.display = 'flex';
+        
+        document.getElementById('patientFullName').textContent = 
+            `${currentPaciente.apellido || ''} ${currentPaciente.nombre || ''}`.trim();
+        document.getElementById('patientId').textContent = currentPaciente.id_historia_clinica || 'N/A';
+        document.getElementById('patientCedula').textContent = currentPaciente.cedula || 'N/A';
+        document.getElementById('patientBirth').textContent = currentPaciente.fecha_nacimiento || 'No registrada';
+        document.getElementById('patientBlood').textContent = currentPaciente.sangre || 'No registrado';
+        document.getElementById('patientPhone').textContent = currentPaciente.telefono || 'No registrado';
+        
+        await cargarCitas();
+        mostrarLoading(false);
+    }
+
+    // ============================================
+    // LIMPIAR BÚSQUEDA
+    // ============================================
+    window.limpiarBusqueda = function() {
+        document.getElementById('searchInput').value = '';
+        document.getElementById('patientInfo').classList.remove('show');
+        document.getElementById('tabsContainer').style.display = 'none';
+        document.getElementById('citasTimeline').innerHTML = '';
+        document.getElementById('exploracionesList').innerHTML = '';
+        document.getElementById('antecedentesContent').innerHTML = '';
+        currentPaciente = null;
+    }
+
+    // ============================================
+    // CAMBIAR TAB
+    // ============================================
+    window.cambiarTab = async function(tab, element) {
+        currentTab = tab;
+        
+        document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+        element.classList.add('active');
+        
+        document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+        document.getElementById(`tab${tab.charAt(0).toUpperCase() + tab.slice(1)}`).classList.add('active');
+        
+        if (!currentPaciente) return;
+        
+        switch(tab) {
+            case 'citas':
+                await cargarCitas();
+                break;
+            case 'exploraciones':
+                await cargarExploraciones();
+                break;
+            case 'antecedentes':
+                await cargarAntecedentes();
+                break;
+        }
+    }
+
+    // ============================================
+    // CARGAR CITAS
+    // ============================================
+    async function cargarCitas() {
+        if (!currentPaciente) return;
+
+        const timeline = document.getElementById('citasTimeline');
+        timeline.innerHTML = '<div style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
+
+        try {
+            const { data, error } = await supabase
+                .from('citas')
+                .select('*')
+                .eq('cedula_paciente', currentPaciente.cedula)
+                .order('fecha_cita', { ascending: false });
+
+            if (error) throw error;
+
+            if (!data || data.length === 0) {
+                timeline.innerHTML = '<div class="no-results"><i class="fas fa-calendar-times"></i><h3>No hay citas registradas</h3></div>';
+                return;
+            }
+
+            timeline.innerHTML = data.map(cita => `
+                <div class="timeline-item">
+                    <div class="timeline-date">
+                        <i class="fas fa-calendar-alt"></i> ${cita.fecha_cita || 'N/A'} - ${cita.hora_cita || 'N/A'}
+                    </div>
+                    <div class="timeline-title">${cita.tipo_consulta || 'Consulta'}</div>
+                    <div class="timeline-content">
+                        <p><strong>Motivo:</strong> ${cita.motivo_consulta || 'N/A'}</p>
+                        <p><strong>Diagnóstico:</strong> ${cita.diagnostico || 'N/A'}</p>
+                        <p><strong>Tratamiento:</strong> ${cita.tratamiento_evolucion || 'N/A'}</p>
+                        ${cita.observaciones ? `<p><strong>Observaciones:</strong> ${cita.observaciones}</p>` : ''}
+                    </div>
+                    <div class="timeline-tags">
+                        <span class="tag"><i class="fas fa-user-md"></i> ${cita.medico_nombre || 'Médico'}</span>
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="verCita('${cita.id_cita_clinica}')">
+                            <i class="fas fa-eye"></i> Ver Detalles
+                        </button>
+                        <button class="btn btn-success" onclick='generarPDFCita(${JSON.stringify(cita).replace(/'/g, "\\'")})'>
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (err) {
+            console.error('Error al cargar citas:', err);
+            timeline.innerHTML = '<div class="no-results" style="color: red;">Error al cargar citas</div>';
+        }
+    }
+
+    // ============================================
+    // CARGAR EXPLORACIONES
+    // ============================================
+    async function cargarExploraciones() {
+        if (!currentPaciente) return;
+
+        const container = document.getElementById('exploracionesList');
+        container.innerHTML = '<div style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
+
+        try {
+            const { data, error } = await supabase
+                .from('exploracion_fisica')
+                .select('*')
+                .eq('cedula_paciente', currentPaciente.cedula)
+                .order('fecha', { ascending: false });
+
+            if (error) throw error;
+
+            if (!data || data.length === 0) {
+                container.innerHTML = '<div class="no-results"><i class="fas fa-stethoscope"></i><h3>No hay exploraciones registradas</h3></div>';
+                return;
+            }
+
+            container.innerHTML = data.map(exp => `
+                <div class="exploracion-card">
+                    <div class="exploracion-header">
+                        <span class="exploracion-id">${exp.exploracion_id || 'N/A'}</span>
+                        <span class="exploracion-fecha">
+                            <i class="fas fa-calendar-alt"></i> ${exp.fecha || 'N/A'}
+                        </span>
+                    </div>
+                    <div class="exploracion-grid">
+                        ${Object.entries(exp)
+                            .filter(([key, value]) => 
+                                value && 
+                                !['id', 'doctor_id', 'exploracion_id', 'cedula_paciente', 
+                                  'nombre_paciente', 'fecha', 'hora_cita'].includes(key) &&
+                                !key.includes('_id'))
+                            .slice(0, 6)
+                            .map(([key, value]) => `
+                                <div class="exploracion-item">
+                                    <strong>${key.replace(/_/g, ' ')}:</strong> ${value}
+                                </div>
+                            `).join('')}
+                    </div>
+                    <div class="action-buttons">
+                        <button class="btn btn-primary" onclick="verExploracion('${exp.exploracion_id}')">
+                            <i class="fas fa-eye"></i> Ver Completo
+                        </button>
+                        <button class="btn btn-success" onclick='generarPDFExploracion(${JSON.stringify(exp).replace(/'/g, "\\'")})'>
+                            <i class="fas fa-file-pdf"></i> PDF
+                        </button>
+                    </div>
+                </div>
+            `).join('');
+
+        } catch (err) {
+            console.error('Error al cargar exploraciones:', err);
+            container.innerHTML = '<div class="no-results" style="color: red;">Error al cargar exploraciones</div>';
+        }
+    }
+
+    // ============================================
+    // CARGAR ANTECEDENTES
+    // ============================================
+    async function cargarAntecedentes() {
+        if (!currentPaciente) return;
+
+        const container = document.getElementById('antecedentesContent');
+        
+        const antecedentes = [
+            { label: 'Diabetes', value: currentPaciente.diabetes, tipo: currentPaciente.tipo_diabetes },
+            { label: 'Hipertensión', value: currentPaciente.hipertension },
+            { label: 'Hipotensión', value: currentPaciente.hipotension },
+            { label: 'Epilepsia', value: currentPaciente.epilepsia },
+            { label: 'Asma', value: currentPaciente.asma },
+            { label: 'Artritis', value: currentPaciente.artritis },
+            { label: 'Artrosis', value: currentPaciente.artrosis },
+            { label: 'VIH', value: currentPaciente.vih },
+            { label: 'Pie Diabético', value: currentPaciente.pie_diabetico },
+            { label: 'Hepatitis', value: currentPaciente.hepatitis, tipo: currentPaciente.tipo_hepatitis },
+            { label: 'Alergia', value: currentPaciente.alergia, tipo: currentPaciente.tipo_alergia },
+            { label: 'Lepra', value: currentPaciente.lepra },
+            { label: 'Tuberculosis', value: currentPaciente.tuberculosis },
+            { label: 'Cardiopatía', value: currentPaciente.cardiopatia },
+            { label: 'Hemofilia', value: currentPaciente.hemofilia },
+            { label: 'Pie Leproso', value: currentPaciente.pie_leproso },
+            { label: 'Sífilis', value: currentPaciente.sifilis },
+            { label: 'Pie Psoriásico', value: currentPaciente.pie_psoriasico },
+            { label: 'Pie Geriátrico', value: currentPaciente.pie_geriatrico },
+            { label: 'Pie Sifilítico', value: currentPaciente.pie_sifilitico },
+            { label: 'Pie Sidoso', value: currentPaciente.pie_sidoso },
+            { label: 'Pie Artrósico', value: currentPaciente.pie_artrosico },
+            { label: 'Pie de Atleta', value: currentPaciente.pie_atleta },
+            { label: 'Otros', value: currentPaciente.otros, tipo: currentPaciente.tipo_otros }
+        ];
+
+        const activos = antecedentes.filter(a => a.value);
+
+        if (activos.length === 0) {
+            container.innerHTML = '<div class="no-results"><i class="fas fa-notes-medical"></i><h3>No hay antecedentes registrados</h3></div>';
+            return;
+        }
+
+        container.innerHTML = `
+            <h3 style="margin-bottom: 20px;">Antecedentes Médicos</h3>
+            <div class="exploracion-grid">
+                ${activos.map(a => `
+                    <div class="exploracion-item">
+                        <strong>${a.label}:</strong> Sí ${a.tipo ? `(${a.tipo})` : ''}
+                    </div>
+                `).join('')}
+            </div>
+        `;
+    }
+
+    // ============================================
+    // VER CITA
+    // ============================================
+    window.verCita = async function(id) {
+        try {
+            const { data, error } = await supabase
+                .from('citas')
+                .select('*')
+                .eq('id_cita_clinica', id)
+                .single();
+
+            if (error) throw error;
+
+            let html = '<div style="text-align: left; max-height: 400px; overflow-y: auto;"><table style="width: 100%; border-collapse: collapse;">';
+            
+            Object.entries(data).forEach(([key, value]) => {
+                if (value && key !== 'doctor_id') {
+                    html += `<tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 8px; font-weight: bold; width: 40%; background: #f8fafc;">${key.replace(/_/g, ' ').toUpperCase()}</td>
+                        <td style="padding: 8px;">${value}</td>
+                    </tr>`;
+                }
+            });
+            
+            html += '</table></div>';
+
+            Swal.fire({
+                title: 'Detalles de la Cita',
+                html: html,
+                icon: 'info',
+                width: '800px',
+                confirmButtonText: 'Cerrar'
+            });
+
+        } catch (err) {
+            console.error(err);
+            notificar('error', 'No se pudo cargar la cita');
+        }
+    }
+
+    // ============================================
+    // VER EXPLORACIÓN
+    // ============================================
+    window.verExploracion = async function(id) {
+        try {
+            const { data, error } = await supabase
+                .from('exploracion_fisica')
+                .select('*')
+                .eq('exploracion_id', id)
+                .single();
+
+            if (error) throw error;
+
+            let html = '<div style="text-align: left; max-height: 400px; overflow-y: auto;"><table style="width: 100%; border-collapse: collapse;">';
+            
+            Object.entries(data).forEach(([key, value]) => {
+                if (value && key !== 'doctor_id' && key !== 'id') {
+                    html += `<tr style="border-bottom: 1px solid #eee;">
+                        <td style="padding: 8px; font-weight: bold; width: 40%; background: #f8fafc;">${key.replace(/_/g, ' ').toUpperCase()}</td>
+                        <td style="padding: 8px;">${value}</td>
+                    </tr>`;
+                }
+            });
+            
+            html += '</table></div>';
+
+            Swal.fire({
+                title: 'Exploración Física',
+                html: html,
+                icon: 'info',
+                width: '800px',
+                confirmButtonText: 'Cerrar'
+            });
+
+        } catch (err) {
+            console.error(err);
+            notificar('error', 'No se pudo cargar la exploración');
+        }
+    }
+
+    // ============================================
+    // INICIALIZACIÓN
+    // ============================================
+    window.addEventListener('load', async () => {
+        mostrarLoading(true);
+        
+        const accesoPermitido = await verificarSuscripcion();
+        if (!accesoPermitido) {
+            mostrarLoading(false);
+            return;
+        }
+        
+        await cargarDoctor();
+        
+        const urlParams = new URLSearchParams(window.location.search);
+        const buscarCedula = urlParams.get('buscar');
+        
+        if (buscarCedula) {
+            document.getElementById('searchInput').value = buscarCedula;
+            await buscarPaciente();
+        }
+        
+        mostrarLoading(false);
+    });
+</script>
+</body>
+</html>

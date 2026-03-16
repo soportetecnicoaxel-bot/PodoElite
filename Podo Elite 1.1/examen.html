@@ -1,0 +1,1267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PodoElite - Exploración Física Podológica</title>
+    
+    <!-- CSP (Seguridad) -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'unsafe-inline';
+        style-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline';
+        img-src 'self' data: https://qagxnpmztawislaehkfa.supabase.co;
+        connect-src 'self' https://qagxnpmztawislaehkfa.supabase.co;
+        font-src 'self' https://cdnjs.cloudflare.com;
+    ">
+    
+    <!-- Font Awesome -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- Supabase -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <!-- jsPDF -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #0284c7;
+            --primary-dark: #0369a1;
+            --secondary: #64748b;
+            --light: #f1f5f9;
+            --white: #ffffff;
+            --border: #e2e8f0;
+            --text: #1e293b;
+            --success: #10b981;
+            --warning: #f59e0b;
+            --danger: #ef4444;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
+            color: var(--text);
+            margin: 0;
+            padding: 20px;
+        }
+
+        /* Menú Hamburguesa */
+        .menu-container {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 1000;
+        }
+
+        .hamburger-btn {
+            background: var(--primary);
+            color: white;
+            border: none;
+            width: 55px;
+            height: 55px;
+            border-radius: 16px;
+            cursor: pointer;
+            font-size: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: 0 8px 20px rgba(2,132,199,0.3);
+            transition: all 0.3s;
+        }
+
+        .hamburger-btn:hover {
+            background: var(--primary-dark);
+            transform: scale(1.05) rotate(90deg);
+        }
+
+        .menu-content {
+            display: none;
+            position: absolute;
+            top: 65px;
+            left: 0;
+            background: white;
+            min-width: 280px;
+            border-radius: 20px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
+            overflow: hidden;
+            flex-direction: column;
+            animation: slideDown 0.3s ease;
+        }
+
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .menu-content.show {
+            display: flex;
+        }
+
+        .menu-header {
+            padding: 20px;
+            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+            color: white;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
+        .menu-content a {
+            text-decoration: none;
+            color: var(--text);
+            padding: 15px 25px;
+            font-size: 14px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            border-bottom: 1px solid var(--border);
+            transition: all 0.2s;
+        }
+
+        .menu-content a i {
+            width: 20px;
+            color: var(--primary);
+        }
+
+        .menu-content a:hover {
+            background: #e0f2fe;
+            color: var(--primary);
+            padding-left: 35px;
+        }
+
+        .menu-content hr {
+            margin: 8px 0;
+            border: none;
+            border-top: 1px solid var(--border);
+        }
+
+        /* Contenedor principal */
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            margin-left: 100px;
+            background: white;
+            padding: 30px;
+            border-radius: 30px;
+            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        }
+
+        /* Header */
+        .main-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+            padding-bottom: 20px;
+            border-bottom: 3px solid var(--primary);
+        }
+
+        .main-header h1 {
+            color: var(--primary);
+            font-size: 2rem;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+
+        .header-badge {
+            background: var(--light);
+            padding: 8px 20px;
+            border-radius: 50px;
+            font-size: 0.9rem;
+            color: var(--secondary);
+            font-weight: 600;
+        }
+
+        /* Header Grid */
+        .header-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            background: var(--light);
+            padding: 25px;
+            border-radius: 20px;
+            margin-bottom: 30px;
+            border: 1px solid var(--border);
+        }
+
+        .field {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .field label {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--secondary);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .field input, .field select {
+            padding: 12px 15px;
+            border: 2px solid var(--border);
+            border-radius: 12px;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+            background: white;
+        }
+
+        .field input:focus, .field select:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(2,132,199,0.1);
+        }
+
+        .field input[readonly] {
+            background: var(--light);
+            cursor: not-allowed;
+            border-style: dashed;
+        }
+
+        .full-width {
+            grid-column: 1 / -1;
+        }
+
+        /* Botón de búsqueda */
+        .search-group {
+            display: flex;
+            gap: 10px;
+        }
+
+        .btn-search {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 0 25px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: all 0.3s;
+        }
+
+        .btn-search:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(2,132,199,0.3);
+        }
+
+        /* Secciones */
+        .section-title {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: white;
+            padding: 15px 20px;
+            font-size: 1.1rem;
+            border-radius: 12px;
+            margin: 30px 0 20px 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 12px rgba(2,132,199,0.2);
+        }
+
+        .form-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 20px;
+            padding: 10px 0;
+        }
+
+        /* Botones de acción */
+        .action-bar {
+            display: flex;
+            gap: 15px;
+            justify-content: flex-end;
+            margin: 40px 0 20px 0;
+            padding: 20px;
+            background: var(--light);
+            border-radius: 16px;
+            position: sticky;
+            bottom: 20px;
+            z-index: 100;
+        }
+
+        .btn {
+            padding: 14px 30px;
+            border: none;
+            border-radius: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 1rem;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 12px rgba(2,132,199,0.3);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-success:hover {
+            background: #0ca678;
+            transform: translateY(-2px);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-danger:hover {
+            background: #dc2626;
+            transform: translateY(-2px);
+        }
+
+        .btn-secondary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #475569;
+            transform: translateY(-2px);
+        }
+
+        /* Tabla de historial */
+        .history-section {
+            margin-top: 50px;
+            background: white;
+            border-radius: 20px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.05);
+            border: 1px solid var(--border);
+        }
+
+        .history-title {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .history-title h2 {
+            color: var(--text);
+            font-size: 1.5rem;
+        }
+
+        .table-container {
+            overflow-x: auto;
+            border-radius: 12px;
+            border: 1px solid var(--border);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 800px;
+        }
+
+        th {
+            background: var(--light);
+            padding: 15px;
+            text-align: left;
+            font-weight: 600;
+            color: var(--secondary);
+            font-size: 0.9rem;
+            border-bottom: 2px solid var(--border);
+        }
+
+        td {
+            padding: 15px;
+            border-bottom: 1px solid var(--border);
+        }
+
+        tr:hover {
+            background: var(--light);
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .btn-icon {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            color: white;
+        }
+
+        .btn-icon.view { background: var(--primary); }
+        .btn-icon.edit { background: var(--warning); }
+        .btn-icon.pdf { background: var(--success); }
+        .btn-icon.delete { background: var(--danger); }
+
+        .btn-icon:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+        }
+
+        /* Loading overlay */
+        #loading-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(255,255,255,0.95);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            z-index: 9999;
+            backdrop-filter: blur(5px);
+        }
+
+        .loader {
+            width: 60px;
+            height: 60px;
+            border: 6px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                margin-left: 0;
+                padding: 15px;
+            }
+            .action-bar {
+                flex-direction: column;
+            }
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<!-- Menú Hamburguesa -->
+<div class="menu-container">
+    <button class="hamburger-btn" onclick="toggleMenu()">
+        <i class="fas fa-bars"></i>
+    </button>
+
+    <nav id="myMenu" class="menu-content">
+        <div class="menu-header">
+            <i class="fas fa-clinic-medical"></i> PodoElite Pro
+        </div>
+
+        <a href="menu.html"><i class="fas fa-home"></i> Inicio</a>
+        <a href="registro.html"><i class="fas fa-user-plus"></i> Registro de Paciente</a>
+        <a href="citas.html"><i class="fas fa-calendar-check"></i> Nueva Cita</a>
+        <a href="examen.html"><i class="fas fa-stethoscope"></i> Exploración</a>
+        <a href="historial.html"><i class="fas fa-file-medical"></i> Historial</a>
+
+        <hr>
+        <a href="perfil.html"><i class="fas fa-user-md"></i> Mi Perfil Profesional</a>
+        <a href="#" onclick="cerrarSesion()" style="color: var(--danger); font-weight: bold;">
+            <i class="fas fa-sign-out-alt"></i> CERRAR SESIÓN
+        </a>
+    </nav>
+</div>
+
+<!-- Loading Overlay -->
+<div id="loading-overlay">
+    <div class="loader"></div>
+</div>
+
+<div class="container">
+    <div class="main-header">
+        <h1>
+            <i class="fas fa-stethoscope"></i> 
+            Exploración Física Podológica
+            <span class="header-badge" id="label_id_ef">Nuevo</span>
+        </h1>
+        <div class="header-badge">
+            <i class="fas fa-user-md"></i> <span id="medico_nombre_display"></span>
+        </div>
+    </div>
+
+    <!-- Datos del Paciente -->
+    <div class="header-grid">
+        <div class="field full-width">
+            <label><i class="fas fa-id-card"></i> Cédula del Paciente *</label>
+            <div class="search-group">
+                <input type="text" id="cedula_paciente" placeholder="Escriba la cédula..." onkeypress="if(event.key==='Enter') buscarPaciente()">
+                <button class="btn-search" onclick="buscarPaciente()">
+                    <i class="fas fa-search"></i> BUSCAR
+                </button>
+            </div>
+        </div>
+
+        <div class="field">
+            <label><i class="fas fa-user"></i> Nombre del Paciente</label>
+            <input type="text" id="nombre_paciente" readonly>
+        </div>
+
+        <div class="field">
+            <label><i class="fas fa-hashtag"></i> ID Exploración</label>
+            <input type="text" id="exploracion_id" readonly>
+        </div>
+
+        <div class="field">
+            <label><i class="fas fa-calendar"></i> Fecha</label>
+            <input type="date" id="fecha_cita" readonly>
+        </div>
+
+        <div class="field">
+            <label><i class="fas fa-clock"></i> Hora</label>
+            <input type="time" id="hora_cita" readonly>
+        </div>
+
+        <div class="field">
+            <label><i class="fas fa-user-md"></i> Médico Responsable</label>
+            <input type="text" id="medico_nombre" readonly>
+        </div>
+
+        <div class="field">
+            <label><i class="fas fa-stethoscope"></i> Especialidad</label>
+            <input type="text" id="especialidad" readonly>
+        </div>
+    </div>
+
+    <form id="formExploracion">
+        <!-- 1. EXAMEN DERMATOLÓGICO -->
+        <div class="section-title">
+            <i class="fas fa-allergies"></i> 1. Examen Dermatológico
+        </div>
+        <div class="form-grid">
+            <div class="field"><label>Anhidrosis</label><select id="anhidrosis"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Hiperhidrosis</label><select id="hiperhidrosis"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Bromohidrosis</label><select id="bromohidrosis"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Epidermofitosis</label><select id="epidermofitosis"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Úlceras</label><select id="ulceras"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Grietas</label><select id="grietas"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Onicomicosis</label><select id="onicomicosis"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Onicogrifosis</label><select id="onicogrifosis"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Onicocriptosis</label><select id="onicocriptosis"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Verruga Plantar</label><select id="verruga_plantar"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Nevos</label><select id="nevos"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>LEPS</label><select id="leps"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field full-width"><label>Otros Dermatológico</label><input type="text" id="otros_examen_dermatol" placeholder="Especifique..."></div>
+        </div>
+
+        <!-- 2. EXAMEN ORTOPÉDICO -->
+        <div class="section-title">
+            <i class="fas fa-bone"></i> 2. Examen Ortopédico
+        </div>
+        <div class="form-grid">
+            <div class="field"><label>Pie Plano</label><select id="pie_plano"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Pie Cavo</label><select id="pie_cavo"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Pie Valgo</label><select id="pie_valgo"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Pie Equino</label><select id="pie_equino"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Pie Talus</label><select id="pie_talus"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+        </div>
+
+        <!-- 2.1 DACTILOPATÍAS -->
+        <div class="section-title">
+            <i class="fas fa-tooth"></i> 2.1 Dactilopatías
+        </div>
+        <div class="form-grid">
+            <div class="field"><label>Sindactilia</label><select id="sindactilia"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Polidactilia</label><select id="polidactilia"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Dedo en Garra</label><select id="dedo_en_garra"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Dedo en Martillo</label><select id="dedo_en_martillo"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Dedo en Maso</label><select id="dedo_en_maso"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Espolón Calcáneo</label><select id="espolon_calcaneo"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Exóstosis Post Superior</label><select id="exostosis_post_superior"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Exóstosis Post Inferior</label><select id="exostosis_post_inferior"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Quinto Dedo Varo</label><select id="quinto_dedo_varo"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field full-width"><label>Otras Ortopédico</label><input type="text" id="otras_examen_ortopedico"></div>
+        </div>
+
+        <!-- 3. EXAMEN ORTOPODOLÓGICO -->
+        <div class="section-title">
+            <i class="fas fa-shoe-prints"></i> 3. Examen Ortopodológico
+        </div>
+        <div class="form-grid">
+            <div class="field"><label>Fórmula Cuadrado</label><select id="formula_cuadrado"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Fórmula Egipcio</label><select id="formula_egipcio"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Fórmula Griego</label><select id="formula_griego"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+        </div>
+
+        <!-- 3.1 TIPO DE MARCHA -->
+        <div class="section-title">
+            <i class="fas fa-walking"></i> 3.1 Tipo de Marcha
+        </div>
+        <div class="form-grid">
+            <div class="field"><label>Marcha Normal</label><select id="marcha_normal"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Marcha Patológica</label><select id="marcha_patologica"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field full-width"><label>Otro tipo de marcha</label><input type="text" id="otras_tipo_marcha"></div>
+        </div>
+
+        <!-- 3.2 DEDOS Y HALLUX -->
+        <div class="section-title">
+            <i class="fas fa-tooth"></i> 3.2 Dedos y Hallux
+        </div>
+        <div class="form-grid">
+            <div class="field"><label>Dedo Supraductos</label><select id="dedo_supraductos"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Dedo Infraductus</label><select id="dedo_infraductus"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Hallux Valgus</label><select id="hallux_valgus"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Hallux Varus</label><select id="hallux_varus"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Hallux Separatus</label><select id="hallux_separatus"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Hallux Rígidus</label><select id="hallux_rigidus"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Hallux Flexus</label><select id="hallux_flexus"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field full-width"><label>Otras Hallux/Dedos</label><input type="text" id="otras_hallux_dedos"></div>
+        </div>
+
+        <!-- 4. NEUROLOGÍA -->
+        <div class="section-title">
+            <i class="fas fa-brain"></i> 4. Neurología
+        </div>
+        <div class="form-grid">
+            <div class="field"><label>Reflejo Aquileano</label><select id="reflejo_aquileano"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Reflejo Rotuliano</label><select id="reflejo_rotuliano"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Anestesia</label><select id="anestesia"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Parestesia</label><select id="parestesia"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Hipoestesia</label><select id="hipoestesia"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field full-width"><label>Otros Neurológico</label><input type="text" id="otros_examen_neurologico"></div>
+        </div>
+
+        <!-- 5. EXAMEN ANGIOLÓGICO -->
+        <div class="section-title">
+            <i class="fas fa-heartbeat"></i> 5. Examen Angiológico
+        </div>
+        <div class="form-grid">
+            <div class="field"><label>Insuf Arterial Crónica</label><select id="insuf_arterial_cronica"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Insuf Arterial Aguda</label><select id="insuf_arterial_aguda"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Varices</label><select id="varices"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Microvarices</label><select id="microvarices"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Linfangitis</label><select id="linfangitis"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Linfedema</label><select id="linfedema"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Mal Perf Plantar</label><select id="mal_perf_plantar"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Flebitis</label><select id="flebitis"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+        </div>
+
+        <!-- 5.1 PULSOS -->
+        <div class="section-title">
+            <i class="fas fa-heart"></i> 5.1 Pulsos
+        </div>
+        <div class="form-grid">
+            <div class="field"><label>Pulso Pedio</label><select id="pulso_pedio"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Pulso Tibial Posterior</label><select id="pulso_tibial_posterior"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Pulso Poplíteo</label><select id="pulso_popliteo"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+        </div>
+
+        <!-- 5.2 TIPO DE CALZADO -->
+        <div class="section-title">
+            <i class="fas fa-shoe-prints"></i> 5.2 Tipo de Calzado
+        </div>
+        <div class="form-grid">
+            <div class="field"><label>Deportivo</label><select id="calzado_deportivo"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Alto</label><select id="calzado_alto"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Estrecho</label><select id="calzado_estrecho"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Punta Fina</label><select id="calzado_punta_fina"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Botas</label><select id="calzado_botas"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Sandalias</label><select id="calzado_sandalias"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+        </div>
+
+        <!-- 5.3 TIPO DE PULSO -->
+        <div class="section-title">
+            <i class="fas fa-heartbeat"></i> 5.3 Tipo de Pulso
+        </div>
+        <div class="form-grid">
+            <div class="field"><label>Fuerte Lento</label><select id="tipo_pulso_fuerte_lento"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Fuerte Rápido</label><select id="tipo_pulso_fuerte_rapido"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Débil Lento</label><select id="tipo_pulso_debil_lento"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Débil Rápido</label><select id="tipo_pulso_debil_rapido"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+        </div>
+
+        <!-- 5.4 VELLOSIDAD -->
+        <div class="section-title">
+            <i class="fas fa-user"></i> 5.4 Vellosidad
+        </div>
+        <div class="form-grid">
+            <div class="field"><label>Normal</label><select id="vellosidad_normal"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Disminuida</label><select id="vellosidad_disminuida"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Nula</label><select id="vellosidad_nula"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field full-width"><label>Otros Vellosidad</label><input type="text" id="otra_vellosidad"></div>
+        </div>
+
+        <!-- 6. EXAMEN PODOLÓGICO -->
+        <div class="section-title">
+            <i class="fas fa-foot"></i> 6. Examen Podológico
+        </div>
+        <div class="form-grid">
+            <div class="field"><label>H. Sin Núcleo</label><select id="h_sin_nucleo"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>H. S. N. Complicada</label><select id="h_s_n_compl"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>H. Con Núcleo</label><select id="h_con_nucleo"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>H. C. N. Complicada</label><select id="h_c_n_compl"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Queratodermia</label><select id="queratodermia"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field full-width"><label>Otras Podológico</label><input type="text" id="otras_examen_podol"></div>
+        </div>
+
+        <!-- 6.1 DEFORMIDADES -->
+        <div class="section-title">
+            <i class="fas fa-bone"></i> 6.1 Deformidades
+        </div>
+        <div class="form-grid">
+            <div class="field"><label>Varo Antepie</label><select id="def_varo_antepie"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Varo Talón</label><select id="def_varo_talon"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Valgo Antepie</label><select id="def_valgo_antepie"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Valgo Talón</label><select id="def_valgo_talon"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Equino</label><select id="def_equino"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Mecedora</label><select id="def_mecedora"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+        </div>
+
+        <!-- 7. EXÁMENES COMPLEMENTARIOS -->
+        <div class="section-title">
+            <i class="fas fa-flask"></i> 7. Exámenes Complementarios
+        </div>
+        <div class="form-grid">
+            <div class="field"><label>Pedigrafía</label><select id="pedigrafia"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Pletismografía</label><select id="pletismografia"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Antibiograma</label><select id="antibiograma"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Hemograma</label><select id="hemograma"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Examen Marcha</label><select id="examen_marcha"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Podoscopia</label><select id="podoscopia"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Micológico</label><select id="micologico"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Roentgnograma</label><select id="roetngnograma"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Coagulación</label><select id="coagulacion"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Oscilometría</label><select id="oscilometria"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Bacteriológico</label><select id="bacteriologico"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Glucemia</label><select id="glucemia"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field"><label>Aneste</label><select id="aneste"><option value="">Seleccione</option><option>Ambos</option><option>Izquierdo</option><option>Derecho</option></select></div>
+            <div class="field full-width"><label>Otros Complementarios</label><input type="text" id="otros_complementarios"></div>
+        </div>
+
+        <!-- Botones de acción -->
+        <div class="action-bar">
+            <button type="button" class="btn btn-secondary" id="btnNuevo">
+                <i class="fas fa-plus"></i> NUEVO
+            </button>
+            <button type="button" class="btn btn-primary" id="btnGuardar">
+                <i class="fas fa-save"></i> GUARDAR
+            </button>
+            <button type="button" class="btn btn-success" id="btnActualizar" style="display: none;">
+                <i class="fas fa-edit"></i> ACTUALIZAR
+            </button>
+            <button type="button" class="btn btn-danger" id="btnCancelar" style="display: none;">
+                <i class="fas fa-times"></i> CANCELAR
+            </button>
+        </div>
+    </form>
+
+    <!-- Historial de Exploraciones -->
+    <div class="history-section">
+        <div class="history-title">
+            <h2><i class="fas fa-history"></i> Historial de Exploraciones</h2>
+            <button class="btn btn-secondary" onclick="cargarHistorial()">
+                <i class="fas fa-sync-alt"></i> Actualizar
+            </button>
+        </div>
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID Exploración</th>
+                        <th>Fecha</th>
+                        <th>Paciente</th>
+                        <th>Cédula</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="historial-body">
+                    <tr><td colspan="5" style="text-align: center;">Cargando historial...</td></tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    // ============================================
+    // IMPORTACIONES (usando config.js y utils.js)
+    // ============================================
+    import { supabase } from './config.js';
+    import { 
+        verificarSuscripcion, 
+        mostrarLoading, 
+        cerrarSesion as cerrarSesionUtil,
+        notificar,
+        confirmar 
+    } from './utils.js';
+    import { generarPDFExploracion as generarPDF } from './js/pdf/pdfExploracion.js';
+// Después de los imports, agrega ESTA línea:
+const originalInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML').set;
+
+
+    // ============================================
+    // HACER FUNCIONES GLOBALES
+    // ============================================
+    window.cerrarSesion = cerrarSesionUtil;
+    window.generarPDFExploracion = generarPDF;
+
+    // ============================================
+    // VARIABLES GLOBALES
+    // ============================================
+    let currentEditId = null;
+Object.defineProperty(Element.prototype, 'innerHTML', {
+    set(value) {
+        const sanitized = window.DOMPurify ? window.DOMPurify.sanitize(value) : value;
+        return originalInnerHTML.call(this, sanitized);
+    }
+});
+    // ============================================
+    // FUNCIONES DEL MENÚ
+    // ============================================
+    window.toggleMenu = function() {
+        document.getElementById('myMenu').classList.toggle('show');
+    }
+
+    document.addEventListener('click', function(event) {
+        const menu = document.getElementById('myMenu');
+        const btn = document.querySelector('.hamburger-btn');
+        if (btn && !btn.contains(event.target) && menu && !menu.contains(event.target)) {
+            menu.classList.remove('show');
+        }
+    });
+
+    // ============================================
+    // FUNCIONES DE CARGA
+    // ============================================
+    async function cargarDoctor() {
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+            
+            const { data, error } = await supabase
+                .from("perfiles") 
+                .select("nombre_doctor, especialidad")
+                .eq('id', user.id)
+                .maybeSingle();
+
+            if (error) throw error;
+
+            if (data) {
+                document.getElementById("medico_nombre").value = data.nombre_doctor || '';
+                document.getElementById("medico_nombre_display").textContent = data.nombre_doctor || '';
+                document.getElementById("especialidad").value = data.especialidad || '';
+            }
+        } catch (err) {
+            console.error('Error al cargar doctor:', err);
+        }
+    }
+
+    function generarExploracionId() {
+        const ahora = new Date();
+        return `EX-${ahora.getFullYear()}${String(ahora.getMonth()+1).padStart(2,'0')}${String(ahora.getDate()).padStart(2,'0')}-${String(ahora.getHours()).padStart(2,'0')}${String(ahora.getMinutes()).padStart(2,'0')}${String(ahora.getSeconds()).padStart(2,'0')}`;
+    }
+
+    async function recolectarDatosFormulario() {
+        const datos = {};
+        
+        document.querySelectorAll('#formExploracion input, #formExploracion select').forEach(el => {
+            if (el.id) datos[el.id] = el.value || '';
+        });
+
+        const { data: { user } } = await supabase.auth.getUser();
+        datos.doctor_id = user?.id;
+
+        const cedula = document.getElementById('cedula_paciente').value;
+        if (!cedula) throw new Error('Debe buscar un paciente primero');
+        datos.cedula_paciente = cedula;
+        datos.nombre_paciente = document.getElementById('nombre_paciente').value || '';
+
+        if (!document.getElementById('exploracion_id').value) {
+            datos.exploracion_id = generarExploracionId();
+            document.getElementById('exploracion_id').value = datos.exploracion_id;
+        } else {
+            datos.exploracion_id = document.getElementById('exploracion_id').value;
+        }
+
+        datos.fecha = document.getElementById('fecha_cita').value || new Date().toISOString().split('T')[0];
+        datos.hora_cita = document.getElementById('hora_cita').value || new Date().toTimeString().substring(0,5);
+
+        return datos;
+    }
+
+    async function mostrarPacienteSeleccionado(paciente) {
+        const nombreCompleto = `${paciente.apellido || ''} ${paciente.nombre || ''}`.trim();
+        document.getElementById("nombre_paciente").value = nombreCompleto;
+
+        const { data: cita } = await supabase
+            .from("citas")
+            .select("*")
+            .eq("cedula_paciente", paciente.cedula)
+            .order("fecha", { ascending: false })
+            .limit(1)
+            .maybeSingle();
+
+        if (cita) {
+            document.getElementById("fecha_cita").value = cita.fecha || new Date().toISOString().split('T')[0];
+            document.getElementById("hora_cita").value = cita.hora || new Date().toTimeString().substring(0,5);
+        } else {
+            document.getElementById("fecha_cita").value = new Date().toISOString().split('T')[0];
+            document.getElementById("hora_cita").value = new Date().toTimeString().substring(0,5);
+        }
+
+        document.getElementById("exploracion_id").value = generarExploracionId();
+        notificar('exito', 'Paciente encontrado');
+        mostrarLoading(false);
+    }
+
+    window.buscarPaciente = async function() {
+        const busqueda = document.getElementById("cedula_paciente").value.trim();
+
+        if (!busqueda) {
+            notificar('warning', 'Ingrese la cédula');
+            return;
+        }
+
+        mostrarLoading(true);
+
+        try {
+            let query = supabase
+                .from("pacientes")
+                .select("nombre, apellido, cedula");
+            
+            if (/^\d+$/.test(busqueda)) {
+                query = query.eq("cedula", busqueda);
+            } else {
+                query = query.or(`nombre.ilike.%${busqueda}%,apellido.ilike.%${busqueda}%`);
+            }
+
+            const { data: pacientes, error } = await query;
+
+            if (error) throw error;
+            if (!pacientes?.length) {
+                notificar('error', 'Paciente no encontrado');
+                mostrarLoading(false);
+                return;
+            }
+
+            if (pacientes.length > 1) {
+                const opciones = Object.fromEntries(
+                    pacientes.map((p, i) => [i, `${p.apellido || ''} ${p.nombre || ''} - ${p.cedula}`])
+                );
+
+                const { value } = await Swal.fire({
+                    title: 'Seleccione un paciente',
+                    input: 'select',
+                    inputOptions: opciones,
+                    showCancelButton: true,
+                    confirmButtonText: 'Seleccionar',
+                    cancelButtonText: 'Cancelar'
+                });
+
+                if (value !== undefined) {
+                    await mostrarPacienteSeleccionado(pacientes[value]);
+                } else {
+                    mostrarLoading(false);
+                }
+            } else {
+                await mostrarPacienteSeleccionado(pacientes[0]);
+            }
+
+        } catch (err) {
+            console.error(err);
+            notificar('error', 'Error al buscar paciente');
+            mostrarLoading(false);
+        }
+    }
+
+    // ============================================
+    // GUARDAR NUEVA EXPLORACIÓN
+    // ============================================
+    document.getElementById('btnGuardar').addEventListener('click', async function() {
+        const cedula = document.getElementById('cedula_paciente').value;
+        const nombre = document.getElementById('nombre_paciente').value;
+        
+        if (!cedula || !nombre) {
+            notificar('error', 'Debe buscar un paciente válido primero');
+            return;
+        }
+
+        const confirmado = await confirmar('¿Guardar nueva exploración?');
+        if (!confirmado) return;
+
+        mostrarLoading(true);
+
+        try {
+            const datos = await recolectarDatosFormulario();
+            
+            const { data, error } = await supabase
+                .from('exploracion_fisica')
+                .insert([datos])
+                .select();
+
+            if (error) throw error;
+
+            notificar('exito', 'Exploración guardada correctamente');
+            await window.generarPDFExploracion(data[0].exploracion_id);
+            
+            limpiarFormulario();
+            await cargarHistorial();
+
+        } catch (err) {
+            console.error('Error al guardar:', err);
+            notificar('error', err.message);
+        }
+
+        mostrarLoading(false);
+    });
+
+    // ============================================
+    // ACTUALIZAR EXPLORACIÓN
+    // ============================================
+    document.getElementById('btnActualizar').addEventListener('click', async function() {
+        if (!currentEditId) {
+            notificar('error', 'No hay exploración seleccionada');
+            return;
+        }
+
+        const confirmado = await confirmar('¿Actualizar exploración?', 'Sí, actualizar');
+        if (!confirmado) return;
+
+        mostrarLoading(true);
+
+        try {
+            const datos = await recolectarDatosFormulario();
+
+            const { error } = await supabase
+                .from('exploracion_fisica')
+                .update(datos)
+                .eq('exploracion_id', currentEditId);
+
+            if (error) throw error;
+
+            notificar('exito', 'Exploración actualizada');
+            await window.generarPDFExploracion(currentEditId);
+            
+            cancelarEdicion();
+            await cargarHistorial();
+
+        } catch (err) {
+            console.error('Error al actualizar:', err);
+            notificar('error', err.message);
+        }
+
+        mostrarLoading(false);
+    });
+
+    // ============================================
+    // CARGAR EXPLORACIÓN PARA EDITAR
+    // ============================================
+    window.cargarExploracion = async function(exploracionId) {
+        mostrarLoading(true);
+
+        try {
+            const { data, error } = await supabase
+                .from('exploracion_fisica')
+                .select('*')
+                .eq('exploracion_id', exploracionId)
+                .single();
+
+            if (error) throw error;
+
+            if (data) {
+                Object.keys(data).forEach(key => {
+                    const el = document.getElementById(key);
+                    if (el) el.value = data[key] || '';
+                });
+
+                currentEditId = exploracionId;
+                document.getElementById('btnGuardar').style.display = 'none';
+                document.getElementById('btnActualizar').style.display = 'inline-flex';
+                document.getElementById('btnCancelar').style.display = 'inline-flex';
+                document.getElementById('label_id_ef').textContent = `Editando: ${exploracionId}`;
+
+                notificar('exito', 'Exploración cargada para edición');
+            }
+        } catch (err) {
+            console.error('Error al cargar:', err);
+            notificar('error', 'No se pudo cargar la exploración');
+        }
+
+        mostrarLoading(false);
+    }
+
+    window.verExploracion = async function(exploracionId) {
+        mostrarLoading(true);
+
+        try {
+            const { data, error } = await supabase
+                .from('exploracion_fisica')
+                .select('*')
+                .eq('exploracion_id', exploracionId)
+                .single();
+
+            if (error) throw error;
+
+            let html = '<div style="max-height:400px; overflow-y:auto;"><table style="width:100%; border-collapse:collapse;">';
+            Object.entries(data).forEach(([key, value]) => {
+                if (value && key !== 'id' && key !== 'doctor_id') {
+                    html += `<tr><td style="padding:8px; font-weight:bold; background:#f8fafc;">${key}</td><td style="padding:8px;">${value}</td></tr>`;
+                }
+            });
+            html += '</table></div>';
+
+            Swal.fire({
+                title: `Exploración: ${exploracionId}`,
+                html: html,
+                width: '800px',
+                confirmButtonText: 'Cerrar'
+            });
+
+        } catch (err) {
+            console.error('Error al ver:', err);
+            notificar('error', 'No se pudo cargar');
+        }
+
+        mostrarLoading(false);
+    }
+
+    window.eliminarExploracion = async function(exploracionId) {
+        const confirmado = await confirmar('¿Eliminar exploración? Esta acción no se puede deshacer', 'Sí, eliminar');
+        if (!confirmado) return;
+
+        mostrarLoading(true);
+
+        try {
+            const { error } = await supabase
+                .from('exploracion_fisica')
+                .delete()
+                .eq('exploracion_id', exploracionId);
+
+            if (error) throw error;
+
+            notificar('exito', 'Exploración eliminada');
+            await cargarHistorial();
+
+        } catch (err) {
+            console.error('Error al eliminar:', err);
+            notificar('error', err.message);
+        }
+
+        mostrarLoading(false);
+    }
+
+    window.cargarHistorial = async function() {
+        const tbody = document.getElementById('historial-body');
+        tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">Cargando...</td></tr>';
+
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            if (!user) return;
+
+            const { data, error } = await supabase
+                .from('exploracion_fisica')
+                .select('exploracion_id, fecha, nombre_paciente, cedula_paciente')
+                .eq('doctor_id', user.id)
+                .order('fecha', { ascending: false })
+                .limit(20);
+
+            if (error) throw error;
+
+            if (!data?.length) {
+                tbody.innerHTML = '<tr><td colspan="5" style="text-align: center;">No hay exploraciones</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = data.map(item => `
+                <tr>
+                    <td><strong>${item.exploracion_id || 'N/A'}</strong></td>
+                    <td>${item.fecha || 'N/A'}</td>
+                    <td>${item.nombre_paciente || 'N/A'}</td>
+                    <td>${item.cedula_paciente || 'N/A'}</td>
+                    <td class="action-buttons">
+                        <button class="btn-icon view" onclick="verExploracion('${item.exploracion_id}')" title="Ver"><i class="fas fa-eye"></i></button>
+                        <button class="btn-icon edit" onclick="cargarExploracion('${item.exploracion_id}')" title="Editar"><i class="fas fa-edit"></i></button>
+                        <button class="btn-icon pdf" onclick='window.generarPDFExploracion("${item.exploracion_id}")' title="PDF"><i class="fas fa-file-pdf"></i></button>
+                        <button class="btn-icon delete" onclick="eliminarExploracion('${item.exploracion_id}')" title="Eliminar"><i class="fas fa-trash"></i></button>
+                    </td>
+                </tr>
+            `).join('');
+
+        } catch (err) {
+            console.error('Error:', err);
+            tbody.innerHTML = '<tr><td colspan="5" style="color:red;">Error al cargar</td></tr>';
+        }
+    }
+
+    function limpiarFormulario() {
+        document.getElementById('formExploracion').reset();
+        document.getElementById('cedula_paciente').value = '';
+        document.getElementById('nombre_paciente').value = '';
+        document.getElementById('exploracion_id').value = generarExploracionId();
+        
+        const hoy = new Date().toISOString().split('T')[0];
+        const hora = new Date().toTimeString().substring(0,5);
+        document.getElementById('fecha_cita').value = hoy;
+        document.getElementById('hora_cita').value = hora;
+    }
+
+    function cancelarEdicion() {
+        currentEditId = null;
+        document.getElementById('btnGuardar').style.display = 'inline-flex';
+        document.getElementById('btnActualizar').style.display = 'none';
+        document.getElementById('btnCancelar').style.display = 'none';
+        document.getElementById('label_id_ef').textContent = 'Nuevo';
+        limpiarFormulario();
+    }
+
+    document.getElementById('btnCancelar').addEventListener('click', cancelarEdicion);
+    document.getElementById('btnNuevo').addEventListener('click', function() {
+        currentEditId ? cancelarEdicion() : limpiarFormulario();
+    });
+
+    // ============================================
+    // INICIALIZACIÓN
+    // ============================================
+    window.addEventListener('load', async () => {
+        mostrarLoading(true);
+
+        const acceso = await verificarSuscripcion();
+        if (!acceso) {
+            mostrarLoading(false);
+            return;
+        }
+
+        await cargarDoctor();
+        document.getElementById("exploracion_id").value = generarExploracionId();
+        
+        const hoy = new Date().toISOString().split('T')[0];
+        const hora = new Date().toTimeString().substring(0,5);
+        document.getElementById("fecha_cita").value = hoy;
+        document.getElementById("hora_cita").value = hora;
+        
+        await cargarHistorial();
+        mostrarLoading(false);
+    });
+</script>
+</body>
+</html>

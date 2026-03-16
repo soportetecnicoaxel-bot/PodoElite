@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PodoElite - Citas Médicas</title>
+    
+    <!-- CSP (Seguridad) -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'unsafe-inline';
+        style-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline';
+        img-src 'self' data: https://qagxnpmztawislaehkfa.supabase.co;
+        connect-src 'self' https://qagxnpmztawislaehkfa.supabase.co;
+        font-src 'self' https://cdnjs.cloudflare.com;
+    ">
+    
+    <!-- Librerías -->
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.0/build/qrcode.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <!-- SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <style>
+        :root { --p: #0284c7; --p-dark: #0369a1; --bg: #f1f5f9; --success: #16a34a; }
+        body { font-family: 'Segoe UI', sans-serif; background: var(--bg); margin: 0; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        
+        .card { background: white; width: 100%; max-width: 900px; padding: 30px; border-radius: 15px; box-shadow: 0 10px 25px rgba(0,0,0,0.05); margin-bottom: 20px; box-sizing: border-box; }
+        h2 { color: var(--p); border-left: 5px solid var(--p); padding-left: 15px; margin-bottom: 25px; }
+        
+        .grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+        .full { grid-column: span 2; }
+        
+        .field { display: flex; flex-direction: column; gap: 6px; }
+        label { font-size: 11px; font-weight: bold; color: #64748b; text-transform: uppercase; }
+        
+        input, select, textarea { padding: 12px; border: 1px solid #e2e8f0; border-radius: 8px; font-size: 14px; outline: none; transition: 0.2s; }
+        input:focus { border-color: var(--p); box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.1); }
+        .readonly { background: #f8fafc; color: #475569; font-weight: 600; cursor: not-allowed; border-style: dashed; }
+
+        .search-group { display: flex; gap: 10px; }
+        .btn-search { background: var(--p); color: white; border: none; padding: 0 20px; border-radius: 8px; cursor: pointer; font-weight: bold; }
+
+        .btn-save { background: var(--success); color: white; border: none; padding: 18px; border-radius: 12px; font-weight: bold; cursor: pointer; width: 100%; margin-top: 25px; font-size: 16px; box-shadow: 0 4px 12px rgba(22, 163, 74, 0.2); transition: 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .btn-save:hover { background: #15803d; transform: translateY(-2px); }
+
+        .menu-container { position: fixed; top: 20px; left: 20px; z-index: 1000; }
+        .hamburger-btn { background: var(--p); color: white; border: none; width: 45px; height: 45px; border-radius: 10px; cursor: pointer; font-size: 20px; }
+        .menu-content { display: none; position: absolute; top: 55px; left: 0; background: white; min-width: 220px; border-radius: 12px; box-shadow: 0 10px 30px rgba(0,0,0,0.1); overflow: hidden; flex-direction: column; }
+        .menu-content.show { display: flex; }
+        .menu-content a { text-decoration: none; color: #475569; padding: 15px 20px; font-size: 14px; display: flex; align-items: center; gap: 12px; border-bottom: 1px solid #f1f5f9; }
+
+        table { width: 100%; border-collapse: collapse; margin-top: 20px; }
+        th { text-align: left; padding: 12px; color: #64748b; font-size: 12px; text-transform: uppercase; border-bottom: 2px solid #f1f5f9; }
+        td { padding: 12px; border-bottom: 1px solid #f1f5f9; font-size: 14px; }
+    </style>
+</head>
+<body>
+
+<div class="menu-container">
+    <button class="hamburger-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+    
+    <nav id="myMenu" class="menu-content">
+        <div class="menu-header"> Menu</div>
+        
+        <a href="registro.html"><i class="fas fa-user-plus"></i> Registro de Paciente</a>
+        <a href="citas.html"><i class="fas fa-calendar-check"></i> Nueva Cita</a>
+        <a href="examen.html"><i class="fas fa-stethoscope"></i> Exploración</a>
+        <a href="historial.html"><i class="fas fa-file-medical"></i> Historial</a>
+        <a href="menu.html"><i class="fas fa-home"></i> Inicio</a>
+        <hr> 
+        <a href="perfil.html"><i class="fas fa-user-md"></i> Mi Perfil Profesional</a>
+        
+        <a href="#" onclick="cerrarSesion()" style="color: #ef4444; font-weight: bold;">
+            <i class="fas fa-sign-out-alt"></i> CERRAR SESIÓN
+        </a>
+    </nav>
+</div>
+
+<div class="card">
+    <h2><i class="fas fa-notes-medical"></i> Registro de Cita y Evolución</h2>
+    <div class="grid">
+        <div class="field full">
+            <label>Cédula del Paciente</label>
+            <div class="search-group">
+                <input type="text" id="cedula_paciente" style="flex: 1;" placeholder="Escriba la cédula..." onkeypress="if(event.key==='Enter') buscarPaciente()">
+                <button class="btn-search" onclick="buscarPaciente()"><i class="fas fa-search"></i> BUSCAR</button>
+            </div>
+        </div>
+        
+        <div class="field"><label>Nombre del Paciente</label><input type="text" id="nombre_paciente" class="readonly" readonly></div>
+        <div class="field"><label>ID Historial Clínico</label><input type="text" id="id_cita_clinica" class="readonly" readonly></div>
+        
+        <div class="field"><label>Fecha de Consulta</label><input type="date" id="fecha_cita"></div>
+        <div class="field"><label>Hora</label><input type="time" id="hora_cita"></div>
+        
+        <div class="field"><label>Médico Responsable</label><input type="text" id="medico_nombre" class="readonly" readonly></div>
+        <div class="field"><label>Especialidad Médica</label><input type="text" id="especialidad" class="readonly" readonly></div>
+
+        <div class="field full"><label>Antecedentes / Tratamiento Actual</label><input type="text" id="tratamiento_actual"></div>
+        
+        <div class="field full">
+            <label>Tipo de Atención</label>
+            <select id="tipo_consulta">
+                <option value="Control Rutinario">Control Rutinario</option>
+                <option value="Seguimiento de Caso">Seguimiento de Caso</option>
+                <option value="Urgencia Podológica">Urgencia Podológica</option>
+                <option value="Examen o Exploracion Fisico ">Examen o Exploracion Fisico </option>
+            </select>
+        </div>
+
+        <div class="field full"><label>Motivo del Encuentro</label><textarea id="motivo" rows="2"></textarea></div>
+        <div class="field full"><label>Diagnóstico Clínico</label><textarea id="diagnostico" rows="2"></textarea></div>
+        <div class="field full"><label>Plan de Tratamiento / Evolución</label><textarea id="evolucion" rows="3"></textarea></div>
+        <div class="field full"><label>Observaciones Adicionales</label><input type="text" id="observaciones"></div>
+    </div>
+    
+    <button class="btn-save" id="btnGuardar" onclick="guardarCita()">
+        <i class="fas fa-file-pdf"></i> GUARDAR Y GENERAR REPORTE CLÍNICO
+    </button>
+    
+    <div class="card">
+        <h3><i class="fas fa-list-ul"></i> Historial de Consultas</h3>
+        <div style="overflow-x:auto;">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Paciente</th>
+                        <th>Tipo</th>
+                        <th>Acciones</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla_citas"></tbody>
+            </table>
+        </div>
+    </div>
+</div>
+
+<script type="module">
+    // ============================================
+    // IMPORTACIONES
+    // ============================================
+    import { supabase } from './config.js';
+    import { 
+        verificarSuscripcion, 
+        mostrarLoading, 
+        cerrarSesion as cerrarSesionUtil,
+        notificar,
+        confirmar 
+    } from './utils.js';
+    
+    // Importar funciones PDF
+    import { generarPDFCita } from './js/pdf/pdfCita.js';
+    import { generarCertificado } from './js/pdf/pdfCertificado.js';
+// Después de los imports, agrega ESTA línea:
+const originalInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML').set;
+
+
+    // ============================================
+    // VARIABLES GLOBALES
+    // ============================================
+    let currentPaciente = null;
+
+    // ============================================
+    // HACER FUNCIONES GLOBALES
+    // ============================================
+    window.cerrarSesion = cerrarSesionUtil;
+    window.generarPDFCita = generarPDFCita;
+    window.generarCertificado = generarCertificado;
+Object.defineProperty(Element.prototype, 'innerHTML', {
+    set(value) {
+        const sanitized = window.DOMPurify ? window.DOMPurify.sanitize(value) : value;
+        return originalInnerHTML.call(this, sanitized);
+    }
+});
+    // ============================================
+    // FUNCIONES DE MENÚ
+    // ============================================
+    window.toggleMenu = function() {
+        document.getElementById("myMenu").classList.toggle("show");
+    }
+
+    document.addEventListener('click', function(event) {
+        const menu = document.getElementById("myMenu");
+        const btn = document.querySelector('.hamburger-btn');
+        if (!menu.contains(event.target) && !btn.contains(event.target)) {
+            menu.classList.remove('show');
+        }
+    });
+
+    // ============================================
+    // FUNCIONES AUXILIARES
+    // ============================================
+    function generarIdCita() {
+        const id = `HIST-${Date.now().toString().slice(-6)}`;
+        document.getElementById('id_cita_clinica').value = id;
+    }
+
+    // ============================================
+    // CARGAR DATOS DEL MÉDICO
+    // ============================================
+    async function cargarDatosMedico() {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (user) {
+            const { data: p } = await supabase
+                .from('perfiles')
+                .select('nombre_doctor, especialidad')
+                .eq('id', user.id)
+                .single();
+                
+            if (p) {
+                document.getElementById('medico_nombre').value = p.nombre_doctor || "No definido";
+                document.getElementById('especialidad').value = p.especialidad || "No definido";
+            }
+        }
+    }
+
+    // ============================================
+    // BUSCAR PACIENTE
+    // ============================================
+    window.buscarPaciente = async function() {
+        const ced = document.getElementById('cedula_paciente').value.trim();
+        
+        if (!ced) {
+            notificar('warning', 'Ingrese una cédula');
+            return;
+        }
+        
+        mostrarLoading(true);
+        
+        const { data, error } = await supabase
+            .from('pacientes')
+            .select('nombre, apellido')
+            .eq('cedula', ced)
+            .single();
+            
+        mostrarLoading(false);
+        
+        if (error) {
+            notificar('error', 'Paciente no encontrado');
+        } else {
+            document.getElementById('nombre_paciente').value = `${data.apellido} ${data.nombre}`;
+            notificar('exito', 'Paciente encontrado');
+        }
+    }
+
+    // ============================================
+    // GUARDAR CITA
+    // ============================================
+    window.guardarCita = async function() {
+        const btn = document.getElementById('btnGuardar');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
+        
+        try {
+            const { data: { user } } = await supabase.auth.getUser();
+            
+            const d = {
+                id_cita_clinica: document.getElementById('id_cita_clinica').value,
+                doctor_id: user.id,
+                cedula_paciente: document.getElementById('cedula_paciente').value,
+                nombre_paciente: document.getElementById('nombre_paciente').value,
+                fecha_cita: document.getElementById('fecha_cita').value,
+                hora_cita: document.getElementById('hora_cita').value,
+                medico_nombre: document.getElementById('medico_nombre').value,
+                especialidad: document.getElementById('especialidad').value,
+                tratamiento_actual: document.getElementById('tratamiento_actual').value,
+                tipo_consulta: document.getElementById('tipo_consulta').value,
+                motivo_consulta: document.getElementById('motivo').value,
+                diagnostico: document.getElementById('diagnostico').value,
+                tratamiento_evolucion: document.getElementById('evolucion').value,
+                observaciones: document.getElementById('observaciones').value
+            };
+
+            mostrarLoading(true);
+            const { error } = await supabase.from('citas').insert([d]);
+            mostrarLoading(false);
+
+            if (error) {
+                notificar('error', 'Error al guardar: ' + error.message);
+            } else {
+                await generarPDFCompleto(d);
+                notificar('exito', 'Cita guardada correctamente');
+
+                setTimeout(async () => {
+                    const confirmado = await confirmar('¿Deseas limpiar el formulario para una nueva cita?');
+                    if (confirmado) {
+                        location.reload();
+                    }
+                }, 2000);
+            }
+        } catch (e) { 
+            console.error("Error crítico:", e); 
+            notificar('error', 'Ocurrió un error inesperado');
+        } finally { 
+            btn.disabled = false; 
+            btn.innerHTML = '<i class="fas fa-file-pdf"></i> GUARDAR Y GENERAR REPORTE CLÍNICO';
+        }
+    }
+
+    // ============================================
+    // GENERAR PDF COMPLETO
+    // ============================================
+    async function generarPDFCompleto(d) {
+        await generarPDFCita(d);
+        await generarCertificado(d);
+    }
+    window.generarPDFCompleto = generarPDFCompleto;
+
+    // ============================================
+    // CARGAR HISTORIAL
+    // ============================================
+    async function cargarHistorial() {
+        const { data, error } = await supabase
+            .from('citas')
+            .select('*')
+            .order('fecha_cita', { ascending: false })
+            .limit(10);
+
+        if (error) {
+            console.error(error);
+            return;
+        }
+
+        const tbody = document.getElementById('tabla_citas');
+        tbody.innerHTML = '';
+
+        data.forEach(cita => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${cita.fecha_cita}</td>
+                <td>${cita.nombre_paciente}</td>
+                <td>${cita.tipo_consulta}</td>
+                <td>
+                    <button onclick='cargarParaEditar(${JSON.stringify(cita).replace(/'/g, "\\'")})' style="color:var(--p); border:none; background:none; cursor:pointer;"><i class="fas fa-edit"></i></button>
+                    <button onclick="eliminarCita('${cita.id_cita_clinica}')" style="color:red; border:none; background:none; cursor:pointer; margin-left:10px;"><i class="fas fa-trash"></i></button>
+                    <button onclick='generarPDFCompleto(${JSON.stringify(cita).replace(/'/g, "\\'")})' style="color:green; border:none; background:none; cursor:pointer; margin-left:10px;"><i class="fas fa-file-pdf"></i></button>
+                </td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    // ============================================
+    // CARGAR PARA EDITAR
+    // ============================================
+    window.cargarParaEditar = function(cita) {
+        document.getElementById('id_cita_clinica').value = cita.id_cita_clinica;
+        document.getElementById('cedula_paciente').value = cita.cedula_paciente;
+        document.getElementById('nombre_paciente').value = cita.nombre_paciente;
+        document.getElementById('fecha_cita').value = cita.fecha_cita;
+        document.getElementById('hora_cita').value = cita.hora_cita;
+        document.getElementById('tratamiento_actual').value = cita.tratamiento_actual;
+        document.getElementById('tipo_consulta').value = cita.tipo_consulta;
+        document.getElementById('motivo').value = cita.motivo_consulta;
+        document.getElementById('diagnostico').value = cita.diagnostico;
+        document.getElementById('evolucion').value = cita.tratamiento_evolucion;
+        document.getElementById('observaciones').value = cita.observaciones;
+        
+        const btn = document.getElementById('btnGuardar');
+        btn.innerHTML = '<i class="fas fa-sync"></i> ACTUALIZAR Y GENERAR REPORTE';
+        btn.onclick = () => actualizarCita(cita.id_cita_clinica);
+        
+        window.scrollTo({ top: 0, behavior: 'smooth' });
+    }
+
+    // ============================================
+    // ACTUALIZAR CITA
+    // ============================================
+    async function actualizarCita(id) {
+        const d = {
+            tratamiento_actual: document.getElementById('tratamiento_actual').value,
+            tipo_consulta: document.getElementById('tipo_consulta').value,
+            motivo_consulta: document.getElementById('motivo').value,
+            diagnostico: document.getElementById('diagnostico').value,
+            tratamiento_evolucion: document.getElementById('evolucion').value,
+            observaciones: document.getElementById('observaciones').value || null,
+        };
+
+        mostrarLoading(true);
+        const { error } = await supabase.from('citas').update(d).eq('id_cita_clinica', id);
+        mostrarLoading(false);
+        
+        if (error) {
+            notificar('error', 'Error al actualizar');
+        } else {
+            notificar('exito', 'Registro actualizado');
+            setTimeout(() => location.reload(), 1500);
+        }
+    }
+
+    // ============================================
+    // ELIMINAR CITA
+    // ============================================
+    window.eliminarCita = async function(id) {
+        const confirmado = await confirmar('¿Estás seguro de eliminar este registro histórico?');
+        if (!confirmado) return;
+        
+        mostrarLoading(true);
+        const { error } = await supabase.from('citas').delete().eq('id_cita_clinica', id);
+        mostrarLoading(false);
+        
+        if (error) {
+            notificar('error', 'No se pudo eliminar');
+        } else {
+            notificar('exito', 'Registro eliminado');
+            cargarHistorial();
+        }
+    }
+
+    // ============================================
+    // INICIALIZACIÓN
+    // ============================================
+    window.addEventListener('load', async () => {
+        mostrarLoading(true);
+        
+        const accesoPermitido = await verificarSuscripcion();
+        if (!accesoPermitido) {
+            mostrarLoading(false);
+            return;
+        }
+        
+        document.getElementById('fecha_cita').valueAsDate = new Date();
+        const now = new Date();
+        document.getElementById('hora_cita').value = now.getHours().toString().padStart(2, '0') + ":" + now.getMinutes().toString().padStart(2, '0');
+        
+        generarIdCita();
+        await cargarDatosMedico();
+        await cargarHistorial();
+        
+        mostrarLoading(false);
+    });
+</script>
+</body>
+</html>
