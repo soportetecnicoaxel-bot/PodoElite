@@ -3,86 +3,162 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PodoElite - Planes de Pago</title>
+    <title>PodoElite Pro · Planes profesionales para podología</title>
+    
+    <!-- Supabase & Librerías -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <!-- jsPDF profesional -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     
     <style>
+        /* ===== VARIABLES DE DISEÑO PREMIUM ===== */
         :root {
-            --primary: #0284c7;
-            --primary-dark: #0369a1;
+            --primary: #0a4c7c;
+            --primary-light: #2b6c9c;
+            --primary-dark: #063454;
+            --accent: #00a67e;
+            --accent-light: #2cc59e;
+            --gray-50: #f8fafc;
+            --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
+            --gray-500: #64748b;
+            --gray-600: #475569;
+            --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
             --success: #10b981;
-            --danger: #ef4444;
             --warning: #f59e0b;
+            --danger: #ef4444;
+            --whatsapp: #25D366;
+            
+            /* Sombras profesionales */
+            --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+            --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+            --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+            --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+            
+            /* Transiciones suaves */
+            --transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
         }
         
         body {
-            font-family: 'Segoe UI', system-ui, sans-serif;
-            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-            margin: 0;
-            min-height: 100vh;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 20px;
+            font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background: linear-gradient(135deg, #f6f9fc 0%, #edf2f9 100%);
+            color: var(--gray-900);
+            line-height: 1.5;
+            -webkit-font-smoothing: antialiased;
         }
         
-        .pago-container {
-            max-width: 1200px;
-            width: 100%;
+        .container {
+            max-width: 1280px;
+            margin: 0 auto;
+            padding: 2rem 1.5rem;
         }
         
+        /* ===== HEADER PROFESIONAL ===== */
         .header {
             text-align: center;
-            margin-bottom: 40px;
+            margin-bottom: 4rem;
+        }
+        
+        .header-badge {
+            display: inline-block;
+            background: rgba(10, 76, 124, 0.08);
+            color: var(--primary);
+            font-size: 0.875rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            padding: 0.5rem 1rem;
+            border-radius: 100px;
+            margin-bottom: 1.5rem;
+            border: 1px solid rgba(10, 76, 124, 0.1);
         }
         
         .header h1 {
-            color: var(--primary);
-            font-size: 2.5rem;
-            margin-bottom: 10px;
+            font-size: 3.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            background: linear-gradient(135deg, var(--gray-900), var(--primary-dark));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            margin-bottom: 1rem;
+            line-height: 1.2;
         }
         
-        .header p {
-            color: #64748b;
+        .header-subtitle {
+            font-size: 1.25rem;
+            color: var(--gray-500);
+            max-width: 600px;
+            margin: 0 auto;
+        }
+        
+        /* ===== TRUST BADGES ===== */
+        .trust-bar {
+            display: flex;
+            justify-content: center;
+            gap: 2rem;
+            flex-wrap: wrap;
+            margin: 2rem 0 3rem;
+            padding: 1.5rem;
+            background: white;
+            border-radius: 100px;
+            box-shadow: var(--shadow-sm);
+            border: 1px solid var(--gray-200);
+        }
+        
+        .trust-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            color: var(--gray-600);
+            font-size: 0.95rem;
+        }
+        
+        .trust-item i {
+            color: var(--primary);
             font-size: 1.1rem;
         }
         
+        /* ===== GRID DE PLANES ===== */
         .planes-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 25px;
-            margin-bottom: 30px;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 2rem;
+            margin-bottom: 4rem;
         }
         
         .plan-card {
             background: white;
-            border-radius: 20px;
-            padding: 30px 20px;
-            text-align: center;
-            box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-            transition: all 0.3s;
-            border: 2px solid transparent;
+            border-radius: 32px;
+            padding: 2rem;
+            position: relative;
+            transition: var(--transition);
+            border: 1px solid var(--gray-200);
+            box-shadow: var(--shadow-md);
             cursor: pointer;
             display: flex;
             flex-direction: column;
-            height: 100%;
-            position: relative;
         }
         
         .plan-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 20px 35px rgba(2,132,199,0.1);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-xl);
+            border-color: var(--primary-light);
         }
         
         .plan-card.selected {
-            border-color: var(--primary);
-            background: #f0f9ff;
-        }
-        
-        .plan-card.popular {
             border: 2px solid var(--primary);
+            box-shadow: 0 0 0 4px rgba(10, 76, 124, 0.1);
         }
         
         .popular-badge {
@@ -92,123 +168,160 @@
             transform: translateX(-50%);
             background: var(--primary);
             color: white;
-            padding: 5px 15px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            font-weight: bold;
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.5rem 1.5rem;
+            border-radius: 100px;
+            letter-spacing: 0.5px;
+            white-space: nowrap;
+            box-shadow: var(--shadow-md);
         }
         
-        .ahorro-badge {
-            background: #10b981;
-            color: white;
-            padding: 5px 10px;
-            border-radius: 20px;
-            font-size: 0.8rem;
-            margin-left: 10px;
+        .plan-header {
+            text-align: center;
+            margin-bottom: 1.5rem;
         }
         
         .plan-nombre {
-            font-size: 1.8rem;
-            font-weight: 700;
-            color: #1e293b;
-            margin-bottom: 15px;
+            font-size: 1.5rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 0.5rem;
         }
         
         .plan-precio {
-            font-size: 2.8rem;
+            font-size: 3rem;
             font-weight: 700;
-            color: var(--primary);
-            margin-bottom: 10px;
+            color: var(--gray-900);
+            line-height: 1;
+            margin-bottom: 0.5rem;
         }
         
         .plan-precio small {
             font-size: 1rem;
-            color: #64748b;
+            font-weight: 400;
+            color: var(--gray-500);
+        }
+        
+        .plan-ahorro {
+            display: inline-block;
+            background: var(--accent);
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 600;
+            padding: 0.375rem 1rem;
+            border-radius: 100px;
+            margin-top: 0.5rem;
         }
         
         .plan-detalle {
-            color: #64748b;
-            margin-bottom: 20px;
+            color: var(--gray-500);
             font-size: 0.95rem;
+            margin-bottom: 1.5rem;
+            text-align: center;
         }
         
         .plan-caracteristicas {
             list-style: none;
-            padding: 0;
-            margin: 20px 0;
-            text-align: left;
+            margin: 1.5rem 0;
             flex-grow: 1;
         }
         
         .plan-caracteristicas li {
-            padding: 8px 0;
-            color: #475569;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 0.5rem 0;
+            color: var(--gray-700);
+            font-size: 0.95rem;
         }
         
         .plan-caracteristicas i {
-            margin-right: 10px;
+            color: var(--accent);
+            font-size: 1rem;
+            width: 1.25rem;
         }
         
-        .plan-caracteristicas i.fa-check-circle {
-            color: var(--success);
-        }
-        
-        .btn-pagar {
-            background: linear-gradient(135deg, var(--primary), var(--primary-dark));
-            color: white;
-            border: none;
-            padding: 15px 30px;
-            border-radius: 50px;
-            font-weight: bold;
-            font-size: 1.1rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            width: 100%;
-            margin-top: 20px;
-        }
-        
-        .btn-pagar:hover:not(:disabled) {
-            transform: translateY(-2px);
-            box-shadow: 0 10px 25px rgba(2,132,199,0.3);
-        }
-        
-        .metodos-pago {
+        .btn-seleccionar {
             background: white;
-            border-radius: 20px;
-            padding: 30px;
-            margin-top: 30px;
-            text-align: center;
-        }
-        
-        .metodos-titulo {
-            color: #1e293b;
-            margin-bottom: 20px;
-        }
-        
-        .metodos-grid {
-            display: flex;
-            gap: 20px;
-            justify-content: center;
-            flex-wrap: wrap;
-        }
-        
-        .metodo-item {
-            background: #f8fafc;
-            border-radius: 10px;
-            padding: 15px 25px;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            border: 1px solid #e2e8f0;
+            color: var(--primary);
+            border: 2px solid var(--primary);
+            padding: 1rem;
+            border-radius: 16px;
+            font-weight: 600;
+            font-size: 1rem;
             cursor: pointer;
-            transition: all 0.3s;
+            transition: var(--transition);
+            width: 100%;
+            margin-top: 1rem;
         }
         
-        .metodo-item:hover {
+        .btn-seleccionar:hover {
             background: var(--primary);
             color: white;
         }
         
+        .plan-card.selected .btn-seleccionar {
+            background: var(--primary);
+            color: white;
+        }
+        
+        /* ===== SECCIÓN DE PAGO ===== */
+        .pago-section {
+            background: white;
+            border-radius: 40px;
+            padding: 3rem;
+            box-shadow: var(--shadow-lg);
+            border: 1px solid var(--gray-200);
+        }
+        
+        .pago-titulo {
+            font-size: 1.75rem;
+            font-weight: 600;
+            color: var(--gray-800);
+            margin-bottom: 2rem;
+            text-align: center;
+        }
+        
+        .metodos-grid {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 2rem;
+        }
+        
+        .metodo-item {
+            background: var(--gray-50);
+            border: 1px solid var(--gray-200);
+            border-radius: 20px;
+            padding: 1rem 2rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            cursor: pointer;
+            transition: var(--transition);
+            font-weight: 500;
+        }
+        
+        .metodo-item:hover {
+            background: white;
+            border-color: var(--primary);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .metodo-item.whatsapp:hover {
+            background: var(--whatsapp);
+            border-color: var(--whatsapp);
+            color: white;
+        }
+        
+        .metodo-item i {
+            font-size: 1.25rem;
+        }
+        
+        /* ===== MODAL PROFESIONAL ===== */
         .modal {
             display: none;
             position: fixed;
@@ -216,7 +329,8 @@
             left: 0;
             width: 100%;
             height: 100%;
-            background: rgba(0,0,0,0.5);
+            background: rgba(0, 0, 0, 0.5);
+            backdrop-filter: blur(8px);
             justify-content: center;
             align-items: center;
             z-index: 1000;
@@ -224,191 +338,420 @@
         
         .modal-content {
             background: white;
-            padding: 40px;
-            border-radius: 20px;
+            border-radius: 32px;
+            padding: 2.5rem;
             max-width: 500px;
             width: 90%;
-            text-align: center;
+            box-shadow: var(--shadow-xl);
+            animation: modalSlide 0.3s ease;
+        }
+        
+        @keyframes modalSlide {
+            from {
+                opacity: 0;
+                transform: translateY(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        
+        .modal h2 {
+            color: var(--gray-800);
+            margin-bottom: 1.5rem;
+            font-weight: 600;
         }
         
         .info-bancaria {
-            text-align: left;
-            background: #f8fafc;
-            padding: 20px;
-            border-radius: 10px;
-            margin: 20px 0;
+            background: linear-gradient(135deg, var(--gray-50), white);
+            border-radius: 20px;
+            padding: 1.5rem;
+            margin: 1.5rem 0;
+            border: 1px solid var(--gray-200);
         }
         
-        .btn-cerrar {
-            background: #e2e8f0;
-            color: #1e293b;
-            border: none;
-            padding: 10px 30px;
-            border-radius: 10px;
-            cursor: pointer;
-            margin-top: 20px;
-            font-size: 1rem;
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid var(--gray-200);
         }
         
-        .btn-cerrar:hover {
-            background: #cbd5e1;
+        .info-row:last-child {
+            border-bottom: none;
         }
         
-        .btn-confirmar {
-            background: var(--success);
-            color: white;
-            border: none;
-            padding: 12px 30px;
-            border-radius: 50px;
-            font-weight: bold;
-            cursor: pointer;
-            margin: 10px;
-            font-size: 1rem;
+        .info-label {
+            color: var(--gray-500);
+            font-weight: 500;
         }
         
-        .btn-confirmar:hover {
-            background: #059669;
+        .info-value {
+            color: var(--gray-800);
+            font-weight: 600;
         }
         
-        .btn-ver-suscripcion {
-            background: white;
-            color: var(--primary);
-            border: 2px solid var(--primary);
-            padding: 10px 20px;
-            border-radius: 50px;
-            font-weight: bold;
-            font-size: 0.9rem;
-            cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 20px;
+        .modal-actions {
+            display: flex;
+            gap: 1rem;
+            justify-content: flex-end;
+            margin-top: 2rem;
         }
         
-        .btn-ver-suscripcion:hover {
+        .btn-primary {
             background: var(--primary);
             color: white;
+            border: none;
+            padding: 0.875rem 1.5rem;
+            border-radius: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        .btn-secondary {
+            background: var(--gray-100);
+            color: var(--gray-700);
+            border: none;
+            padding: 0.875rem 1.5rem;
+            border-radius: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-secondary:hover {
+            background: var(--gray-200);
+        }
+        
+        .btn-whatsapp {
+            background: var(--whatsapp);
+            color: white;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 16px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.75rem;
+            text-decoration: none;
+            width: 100%;
+            justify-content: center;
+            margin-top: 1rem;
+        }
+        
+        .btn-whatsapp:hover {
+            filter: brightness(0.95);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-md);
+        }
+        
+        /* ===== BOTONES DE ACCIÓN ===== */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 3rem;
+        }
+        
+        .btn-outline {
+            background: white;
+            color: var(--gray-700);
+            border: 1px solid var(--gray-300);
+            padding: 0.875rem 2rem;
+            border-radius: 50px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: var(--transition);
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        
+        .btn-outline:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--gray-50);
+        }
+        
+        /* ===== UTILIDADES ===== */
+        .text-accent {
+            color: var(--accent);
+        }
+        
+        .text-small {
+            font-size: 0.875rem;
+            color: var(--gray-500);
+        }
+        
+        .trust-note {
+            text-align: center;
+            margin-top: 2rem;
+            color: var(--gray-400);
+            font-size: 0.875rem;
+        }
+        
+        /* ===== RESPONSIVE ===== */
+        @media (max-width: 768px) {
+            .header h1 {
+                font-size: 2.5rem;
+            }
+            
+            .trust-bar {
+                border-radius: 24px;
+                padding: 1rem;
+            }
+            
+            .pago-section {
+                padding: 2rem;
+            }
+            
+            .modal-content {
+                padding: 1.5rem;
+            }
+            
+            .modal-actions {
+                flex-direction: column;
+            }
+            
+            .btn-primary, .btn-secondary {
+                width: 100%;
+                justify-content: center;
+            }
         }
     </style>
 </head>
 <body>
-    <div class="pago-container">
+    <div class="container">
+        <!-- HEADER PROFESIONAL -->
         <div class="header">
-            <h1><i class="fas fa-crown"></i> PodoElite Pro</h1>
-            <p>Elige el plan que mejor se adapte a tus necesidades</p>
+            <div class="header-badge">
+                <i class="fas fa-shield-alt"></i> Plataforma segura · 128-bit SSL
+            </div>
+           
+            <p class="header-subtitle">Elige el plan que mejor se adapte a tu práctica profesional</p>
+        </div>
+        
+        <!-- TRUST BAR (SEÑALES DE CONFIANZA) -->
+        <div class="trust-bar">
+            <div class="trust-item">
+                <i class="fas fa-lock"></i>
+                <span>Pagos 100% seguros</span>
+            </div>
+            <div class="trust-item">
+                <i class="fas fa-clock"></i>
+                <span>Activación en 24h</span>
+            </div>
+            <div class="trust-item">
+                <i class="fas fa-headset"></i>
+                <span>Soporte prioritario</span>
+            </div>
+            <div class="trust-item">
+                <i class="fas fa-file-invoice"></i>
+                <span>Factura profesional</span>
+            </div>
         </div>
         
         <!-- PLANES DE PAGO -->
         <div class="planes-grid">
-            <!-- PLAN MENSUAL $11.99 -->
+            <!-- PLAN MENSUAL -->
             <div class="plan-card" onclick="seleccionarPlan('mensual')" id="planMensual">
-                <div class="plan-nombre">Mensual</div>
-                <div class="plan-precio">$11.99<small>/mes</small></div>
-                <div class="plan-detalle">Facturación mensual</div>
+                <div class="plan-header">
+                    <div class="plan-nombre">Plan Mensual</div>
+                    <div class="plan-precio">$11.99 <small>/mes</small></div>
+                    <div class="plan-detalle">Sin permanencia · Cancela cuando quieras</div>
+                </div>
                 <ul class="plan-caracteristicas">
-                    <li><i class="fas fa-check-circle"></i> <strong>Pacientes ilimitados</strong></li>
+                    <li><i class="fas fa-check-circle"></i> Pacientes ilimitados</li>
                     <li><i class="fas fa-check-circle"></i> Citas ilimitadas</li>
                     <li><i class="fas fa-check-circle"></i> Exploraciones completas</li>
                     <li><i class="fas fa-check-circle"></i> Certificados médicos</li>
                     <li><i class="fas fa-check-circle"></i> PDF profesionales</li>
-                    <li><i class="fas fa-check-circle"></i> Historial clínico</li>
-                    <li><i class="fas fa-check-circle"></i> Soporte vía email</li>
+                    <li><i class="fas fa-check-circle"></i> Historial clínico digital</li>
                 </ul>
-                <button class="btn-pagar" onclick="event.stopPropagation(); seleccionarPlan('mensual')">Seleccionar</button>
+                <button class="btn-seleccionar" onclick="event.stopPropagation(); seleccionarPlan('mensual')">
+                    Seleccionar plan
+                </button>
             </div>
             
-            <!-- PLAN 4 MESES $44.99 -->
+            <!-- PLAN 4 MESES (POPULAR) -->
             <div class="plan-card popular" onclick="seleccionarPlan('cuatrimestral')" id="planCuatrimestral">
-                <div class="popular-badge">🔥 MÁS ELEGIDO</div>
-                <div class="plan-nombre">4 Meses</div>
-                <div class="plan-precio">$44.99<small>/4 meses</small></div>
-                <div class="plan-detalle">Ahorras $3.97 <span class="ahorro-badge">-8%</span></div>
-                <ul class="plan-caracteristicas">
-                    <li><i class="fas fa-check-circle"></i> <strong>Todo lo incluido</strong></li>
-                    <li><i class="fas fa-check-circle"></i> Precio especial por 4 meses</li>
-                    <li><i class="fas fa-check-circle"></i> Ahorro garantizado</li>
-                    <li><i class="fas fa-check-circle"></i> Sin aumento de precio</li>
-                    <li><i class="fas fa-check-circle"></i> Soporte prioritario</li>
-                    <li><i class="fas fa-check-circle"></i> Backup automático</li>
-                </ul>
-                <button class="btn-pagar" onclick="event.stopPropagation(); seleccionarPlan('cuatrimestral')">Seleccionar</button>
-            </div>
-            
-            <!-- PLAN ANUAL 13 MESES $120 -->
-            <div class="plan-card" onclick="seleccionarPlan('anual')" id="planAnual">
-                <div class="plan-nombre">Anual <span class="ahorro-badge">1 MES GRATIS</span></div>
-                <div class="plan-precio">$120<small>/año</small></div>
-                <div class="plan-detalle">13 meses por el precio de 12 <strong>($9.23/mes)</strong></div>
-                <ul class="plan-caracteristicas">
-                    <li><i class="fas fa-check-circle"></i> <strong>✅ 1 MES COMPLETO GRATIS</strong></li>
-                    <li><i class="fas fa-check-circle"></i> 13 meses de servicio</li>
-                    <li><i class="fas fa-check-circle"></i> Ahorras $35.87 al año</li>
-                    <li><i class="fas fa-check-circle"></i> <strong>📞 SOPORTE PRIORITARIO 24/7</strong></li>
-                    <li><i class="fas fa-check-circle"></i> Estadísticas avanzadas</li>
-                    <li><i class="fas fa-check-circle"></i> Capacitación personalizada</li>
-                </ul>
-                <button class="btn-pagar" onclick="event.stopPropagation(); seleccionarPlan('anual')">Seleccionar</button>
-            </div>
-        </div>
-        
-        <!-- MÉTODOS DE PAGO -->
-        <div class="metodos-pago">
-            <h3 class="metodos-titulo"><i class="fas fa-credit-card"></i> Métodos de pago</h3>
-            <div class="metodos-grid">
-                <div class="metodo-item" onclick="mostrarModalPago('transferencia')">
-                    <i class="fas fa-university"></i>
-                    <span>Transferencia bancaria</span>
+                <div class="popular-badge">MÁS ELEGIDO · 85% de los profesionales</div>
+                <div class="plan-header">
+                    <div class="plan-nombre">Plan Semestral</div>
+                    <div class="plan-precio">$44.99 <small>/4 meses</small></div>
+                    <span class="plan-ahorro">Ahorras $3.97 (8% dto.)</span>
+                    <div class="plan-detalle" style="margin-top: 1rem;">Equivale a $11.25/mes</div>
                 </div>
+                <ul class="plan-caracteristicas">
+                    <li><i class="fas fa-check-circle"></i> Todo lo del plan mensual</li>
+                    <li><i class="fas fa-check-circle"></i> Soporte prioritario</li>
+                    <li><i class="fas fa-check-circle"></i> Backup automático diario</li>
+                    <li><i class="fas fa-check-circle"></i> Estadísticas avanzadas</li>
+                    <li><i class="fas fa-check-circle"></i> Exportación de datos</li>
+                    <li><i class="fas fa-check-circle"></i> 2 horas de capacitación</li>
+                </ul>
+                <button class="btn-seleccionar" onclick="event.stopPropagation(); seleccionarPlan('cuatrimestral')">
+                    Seleccionar plan
+                </button>
             </div>
             
-            <!-- BOTÓN PARA VER MI SUSCRIPCIÓN -->
-            <div style="margin-top: 30px;">
-                <button class="btn-ver-suscripcion" onclick="verMiSuscripcion()">
-                    <i class="fas fa-search"></i> Ver mi suscripción actual
+            <!-- PLAN ANUAL 13 MESES -->
+            <div class="plan-card" onclick="seleccionarPlan('anual')" id="planAnual">
+                <div class="plan-header">
+                    <div class="plan-nombre">Plan Anual</div>
+                    <div class="plan-precio">$120 <small>/año</small></div>
+                    <span class="plan-ahorro">1 MES COMPLETO GRATIS</span>
+                    <div class="plan-detalle" style="margin-top: 1rem;">13 meses · $9.23/mes</div>
+                </div>
+                <ul class="plan-caracteristicas">
+                    <li><i class="fas fa-check-circle"></i> Todo lo incluido</li>
+                    <li><i class="fas fa-check-circle"></i> <strong>Soporte 24/7 prioritario</strong></li>
+                    <li><i class="fas fa-check-circle"></i> Consultoría personalizada</li>
+                    <li><i class="fas fa-check-circle"></i> Desarrollo de features a medida</li>
+                    <li><i class="fas fa-check-circle"></i> API de integración</li>
+                    <li><i class="fas fa-check-circle"></i> Auditoría de seguridad</li>
+                </ul>
+                <button class="btn-seleccionar" onclick="event.stopPropagation(); seleccionarPlan('anual')">
+                    Seleccionar plan
                 </button>
             </div>
         </div>
+        
+        <!-- SECCIÓN DE PAGO -->
+        <div class="pago-section">
+            <h2 class="pago-titulo">Completa tu solicitud</h2>
+            
+            <div class="metodos-grid">
+                <div class="metodo-item" onclick="mostrarModalPago('transferencia')">
+                    <i class="fas fa-university"></i>
+                    Transferencia bancaria
+                </div>
+                <div class="metodo-item whatsapp" onclick="mostrarModalPago('whatsapp')">
+                    <i class="fab fa-whatsapp"></i>
+                    WhatsApp · contacto directo
+                </div>
+            </div>
+            
+            <p class="text-small" style="text-align: center;">
+                <i class="fas fa-info-circle"></i> Recibirás confirmación por email · Tus datos están seguros
+            </p>
+            
+            <!-- BOTONES DE ACCIÓN -->
+            <div class="action-buttons">
+                <button class="btn-outline" onclick="verMiSuscripcion()">
+                    <i class="fas fa-search"></i> Ver mi suscripción
+                </button>
+                <button class="btn-outline" onclick="generarPDFInfo()">
+                    <i class="fas fa-file-pdf"></i> Descargar info de planes
+                </button>
+            </div>
+        </div>
+        
+        <!-- NOTA DE CONFIANZA FINAL -->
+        <p class="trust-note">
+            <i class="fas fa-shield-alt"></i> Todos los pagos son procesados de forma segura · 
+            <i class="fas fa-credit-card"></i> Datos bancarios encriptados · 
+            <i class="fas fa-file-signature"></i> Facturación legal
+        </p>
     </div>
     
     <!-- MODAL DE PAGO -->
     <div id="modalPago" class="modal">
         <div class="modal-content">
-            <h2 id="modalTitulo"></h2>
+            <h2 id="modalTitulo">Detalles de pago</h2>
             <div id="modalContenido"></div>
-            <button class="btn-cerrar" onclick="cerrarModal()">Cerrar</button>
+            <div class="modal-actions">
+                <button class="btn-secondary" onclick="cerrarModal()">
+                    <i class="fas fa-times"></i> Cerrar
+                </button>
+                <button class="btn-primary" onclick="generarPDFPago()" id="btnPDFModal">
+                    <i class="fas fa-file-pdf"></i> Guardar PDF
+                </button>
+            </div>
         </div>
     </div>
     
     <script type="module">
         import { supabase } from './config.js';
-        import { mostrarLoading, notificar } from './utils.js';
         
+        // ============================================
+        // VARIABLES GLOBALES
+        // ============================================
         let planSeleccionado = null;
         
         // ============================================
-        // SELECCIONAR PLAN DE PAGO
+        // UTILIDADES PROFESIONALES
+        // ============================================
+        function mostrarLoading(estado) {
+            // Puedes implementar un spinner si lo deseas
+            console.log('Loading:', estado);
+        }
+        
+        function notificar(tipo, mensaje) {
+            Swal.fire({
+                icon: tipo === 'exito' ? 'success' : tipo === 'error' ? 'error' : 'info',
+                title: mensaje,
+                toast: true,
+                position: 'top-end',
+                showConfirmButton: false,
+                timer: 3000,
+                timerProgressBar: true,
+                background: 'white',
+                iconColor: tipo === 'exito' ? '#10b981' : '#ef4444',
+                customClass: {
+                    popup: 'colored-toast'
+                }
+            });
+        }
+        
+        // ============================================
+        // FUNCIÓN: Seleccionar plan
         // ============================================
         window.seleccionarPlan = function(plan) {
             document.querySelectorAll('.plan-card').forEach(card => {
                 card.classList.remove('selected');
             });
             
-            document.getElementById(`plan${plan.charAt(0).toUpperCase() + plan.slice(1)}`).classList.add('selected');
+            const planId = `plan${plan.charAt(0).toUpperCase() + plan.slice(1)}`;
+            const planElement = document.getElementById(planId);
+            if (planElement) {
+                planElement.classList.add('selected');
+            }
+            
             planSeleccionado = plan;
             
             const nombres = {
                 mensual: 'Mensual ($11.99/mes)',
-                cuatrimestral: '4 Meses ($44.99)',
+                cuatrimestral: 'Semestral ($44.99)',
                 anual: 'Anual 13 meses ($120)'
             };
             
-            notificar('info', `Has seleccionado el plan ${nombres[plan]}`);
+            notificar('exito', `✅ Plan seleccionado: ${nombres[plan]}`);
         };
         
         // ============================================
-        // MOSTRAR MODAL DE PAGO
+        // FUNCIÓN: Mostrar modal de pago (PROFESIONAL)
         // ============================================
-        window.mostrarModalPago = function(metodo) {
+        window.mostrarModalPago = async function(metodo) {
             if (!planSeleccionado) {
-                notificar('warning', 'Primero selecciona un plan');
+                notificar('error', 'Primero selecciona un plan');
                 return;
             }
             
@@ -424,28 +767,151 @@
             
             const nombres = {
                 mensual: 'Mensual',
-                cuatrimestral: '4 Meses',
-                anual: 'Anual (13 meses)'
+                cuatrimestral: 'Semestral',
+                anual: 'Anual'
             };
             
+            const numeroPlan = planSeleccionado === 'mensual' ? '1' : 
+                               planSeleccionado === 'cuatrimestral' ? '2' : '3';
+            
+            const referencia = `POD-${Date.now().toString().slice(-8)}-${numeroPlan}`;
             if (metodo === 'transferencia') {
-                titulo.textContent = 'Transferencia bancaria';
-                contenido.innerHTML = `
-                    <div class="info-bancaria">
-                        <p><strong>Banco:</strong> Pichincha</p>
-                        <p><strong>Tipo:</strong> Ahorros</p>
-                        <p><strong>Número:</strong> 2211508621</p>
-                        <p><strong>Titular:</strong> Axel Calderon</p>
-                        <p><strong>Monto:</strong> $${precios[planSeleccionado]}</p>
-                        <p><strong>Plan:</strong> ${nombres[planSeleccionado]}</p>
-                    </div>
-                    <p>Envía el comprobante a <strong>soporte.tecnico.axel@gmail.com</strong></p>
+    titulo.textContent = 'Transferencia bancaria';
+    contenido.innerHTML = `
+        <div class="info-bancaria" style="padding: 1rem; margin: 1rem 0;">
+            <div class="info-row" style="padding: 0.35rem 0;">
+                <span class="info-label" style="font-size: 0.85rem;">Banco</span>
+                <span class="info-value" style="font-size: 0.85rem;">Banco Pichincha</span>
+            </div>
+            <div class="info-row" style="padding: 0.35rem 0;">
+                <span class="info-label" style="font-size: 0.85rem;">Tipo</span>
+                <span class="info-value" style="font-size: 0.85rem;">Ahorros</span>
+            </div>
+            <div class="info-row" style="padding: 0.35rem 0;">
+                <span class="info-label" style="font-size: 0.85rem;">Número</span>
+                <span class="info-value" style="font-size: 0.85rem;"> 2211508621</span>
+            </div>
+            <div class="info-row" style="padding: 0.35rem 0;">
+                <span class="info-label" style="font-size: 0.85rem;">Titular</span>
+                <span class="info-value" style="font-size: 0.85rem;">Axel Calderon</span>
+            </div>
+            <div class="info-row" style="padding: 0.35rem 0;">
+                <span class="info-label" style="font-size: 0.85rem;">Monto</span>
+                <span class="info-value" style="color: var(--accent); font-size: 0.85rem; font-weight: 600;">$${precios[planSeleccionado]}</span>
+            </div>
+            <div class="info-row" style="padding: 0.35rem 0;">
+                <span class="info-label" style="font-size: 0.85rem;">Plan</span>
+                <span class="info-value" style="font-size: 0.85rem;">${nombres[planSeleccionado]}</span>
+            </div>
+            <div class="info-row" style="padding: 0.35rem 0;">
+                <span class="info-label" style="font-size: 0.85rem;">Referencia</span>
+                <span class="info-value" style="font-family: monospace; font-size: 0.8rem;">${referencia}</span>
+            </div>
+        </div>
+        
+        <p style="text-align: center; margin: 0.75rem 0; padding: 0.5rem; background: var(--gray-50); border-radius: 8px; font-size: 0.85rem;">
+            <i class="fas fa-envelope" style="color: var(--primary);"></i>
+            Envía comprobante a:<br>
+            <strong style="font-size: 0.9rem;">soporte.tecnico.axel@gmail.com</strong>
+        </p>
+        
+        <button class="btn-primary" onclick="guardarSolicitudPago()" style="width: 100%; justify-content: center; padding: 0.6rem; font-size: 0.9rem;">
+            <i class="fas fa-check-circle"></i> Confirmar pago realizado
+        </button>
+    `;
+
+          
+       } else if (metodo === 'whatsapp') {
+    try {
+        const { data: { user } } = await supabase.auth.getUser();
+        
+        // Obtener TODOS los datos del perfil del doctor
+        const { data: perfil, error: perfilError } = await supabase
+            .from('perfiles')
+            .select('nombre_doctor, email_profesional, telefono_doctor, especialidad, ciudad')
+            .eq('id', user.id)
+            .single();
+        
+        const email = perfil?.email_profesional || user?.email || 'No registrado';
+        const nombre = perfil?.nombre_doctor || 'Doctor';
+        const telefono = perfil?.telefono_doctor || 'No registrado';
+        const especialidad = perfil?.especialidad || 'No especificada';
+        const ciudad = perfil?.ciudad || 'No especificada';
+        
+        const mensaje = encodeURIComponent(
+            `[PodoElite Pro] Solicitud de Plan - ${new Date().toLocaleDateString('es-ES')}\n\n` +
+            `DATOS DEL PROFESIONAL\n` +
+            `━━━━━━━━━━━━━━━━━━━━━━\n` +
+            `Nombre: ${nombre}\n` +
+            `Email: ${email}\n` +
+            `Teléfono: ${telefono}\n` +
+            `Especialidad: ${especialidad}\n` +
+            `Ciudad: ${ciudad}\n\n` +
+            `DETALLE DEL PLAN\n` +
+            `━━━━━━━━━━━━━━━━━━━━━━\n` +
+            `Plan seleccionado: ${nombres[planSeleccionado]}\n` +
+            `Monto: $${precios[planSeleccionado]}\n` +
+            `Referencia: ${referencia}\n\n` +
+            `Adjunto comprobante de pago.\n` +
+            `Quedamos atentos a la confirmación.\n\n` +
+            `Atentamente,\n` +
+            `${nombre}`
+        );
+        
+        
+        titulo.textContent = 'Contacto directo por WhatsApp';
+        contenido.innerHTML = `
+            <div class="info-bancaria" style="text-align: center;">
+                <i class="fab fa-whatsapp" style="font-size: 3rem; color: var(--whatsapp); margin-bottom: 1rem;"></i>
+                <p style="margin-bottom: 1.5rem;">
+                    Envíanos un mensaje directo por WhatsApp con los detalles de tu pago.
+                </p>
+                <p class="text-small" style="margin-bottom: 1rem; background: var(--gray-100); padding: 0.75rem; border-radius: 8px;">
+                    <strong>Datos que se enviarán:</strong><br>
+                    👤 ${nombre}<br>
+                    📧 ${email}<br>
+                    📱 ${telefono}<br>
+                    📦 ${nombres[planSeleccionado]} - $${precios[planSeleccionado]}
+                </p>
+            </div>
+            
+            <a href="https://wa.me/593995700006?text=${mensaje}" 
+               target="_blank" 
+               class="btn-whatsapp">
+                <i class="fab fa-whatsapp"></i> Abrir WhatsApp con mis datos
+            </a>
+            
+            <p class="text-small" style="margin-top: 1rem; text-align: center;">
+                <i class="fas fa-clock"></i> Tiempo de respuesta: < 30 minutos
+            </p>
+        `;
                     
-                    <!-- BOTÓN PARA CONFIRMAR SOLICITUD -->
-                    <button class="btn-confirmar" onclick="guardarSolicitudPago()" style="margin-top: 20px;">
-                        <i class="fas fa-check-circle"></i> YA PAGUÉ - CONFIRMAR
-                    </button>
-                `;
+                    titulo.textContent = 'Contacto directo por WhatsApp';
+                    contenido.innerHTML = `
+                        <div class="info-bancaria" style="text-align: center;">
+                            <i class="fab fa-whatsapp" style="font-size: 3rem; color: var(--whatsapp); margin-bottom: 1rem;"></i>
+                            <p style="margin-bottom: 1.5rem;">
+                                Envíanos un mensaje directo por WhatsApp con los detalles de tu pago.
+                            </p>
+                            <p class="text-small" style="margin-bottom: 1.5rem;">
+                                Incluye el comprobante y te activaremos en menos de 1 hora.
+                            </p>
+                        </div>
+                        
+                       <a href="https://wa.me/593995700006?text=${mensaje}"
+                           target="_blank" 
+                           class="btn-whatsapp">
+                            <i class="fab fa-whatsapp"></i> Abrir WhatsApp
+                        </a>
+                        
+                        <p class="text-small" style="margin-top: 1rem; text-align: center;">
+                            <i class="fas fa-clock"></i> Tiempo de respuesta: < 30 minutos
+                        </p>
+                    `;
+                } catch (error) {
+                    console.error('Error:', error);
+                    notificar('error', 'Error al preparar WhatsApp');
+                }
             }
             
             modal.style.display = 'flex';
@@ -456,58 +922,340 @@
         };
         
         // ============================================
-        // GUARDAR SOLICITUD DE PAGO (NO ACTIVAR)
+        // FUNCIÓN: Guardar solicitud de pago
         // ============================================
-      // ============================================
-// GUARDAR SOLICITUD DE PAGO (CORREGIDO - USA perfiles)
-// ============================================
-window.guardarSolicitudPago = async function() {
-    mostrarLoading(true);
-    
-    try {
-        const { data: { user } } = await supabase.auth.getUser();
-        
-        if (!user) {
-            notificar('error', 'Debes iniciar sesión');
-            window.location.href = 'index.html';
-            return;
-        }
-        
-        const precios = {
-            mensual: '11.99',
-            cuatrimestral: '44.99',
-            anual: '120'
+        window.guardarSolicitudPago = async function() {
+            mostrarLoading(true);
+            
+            try {
+                const { data: { user } } = await supabase.auth.getUser();
+                
+                if (!user) {
+                    notificar('error', 'Debes iniciar sesión');
+                    window.location.href = 'index.html';
+                    return;
+                }
+                
+                const precios = {
+                    mensual: '11.99',
+                    cuatrimestral: '44.99',
+                    anual: '120'
+                };
+                
+                const planNumero = planSeleccionado === 'mensual' ? '1' : 
+                                   planSeleccionado === 'cuatrimestral' ? '2' : '3';
+                
+                const referencia = `POD-${Date.now().toString().slice(-8)}-${planNumero}`;
+                
+                const { error } = await supabase
+                    .from('perfiles')
+                    .update({ 
+                        solicitud_plan: planNumero,
+                        solicitud_monto: precios[planSeleccionado],
+                        solicitud_fecha: new Date().toISOString(),
+                        solicitud_estado: 'pendiente',
+                        solicitud_referencia: referencia
+                    })
+                    .eq('id', user.id);
+                
+                if (error) throw error;
+                
+                // Generar PDF de confirmación
+                generarPDFConfirmacion();
+                
+                notificar('exito', '✅ Solicitud enviada. Recibirás confirmación en 30 minutos.');
+                cerrarModal();
+                
+            } catch (error) {
+                console.error('Error:', error);
+                notificar('error', 'Error: ' + error.message);
+            } finally {
+                mostrarLoading(false);
+            }
         };
         
-        const planNumero = planSeleccionado === 'mensual' ? '1' : 
-                          planSeleccionado === 'cuatrimestral' ? '2' : '3';
+        // ============================================
+        // FUNCIONES PDF PROFESIONALES
+        // ============================================
         
-        // ✅ AHORA USA perfiles (NO solicitudes_pago)
-        const { error } = await supabase
-            .from('perfiles')
-            .update({ 
-                solicitud_plan: planNumero,
-                solicitud_monto: precios[planSeleccionado],
-                solicitud_fecha: new Date().toISOString(),
-                solicitud_estado: 'pendiente'
-            })
-            .eq('id', user.id);  // Importante: filtrar por ID del usuario
+        // PDF de pago (detalles bancarios)
+        window.generarPDFPago = function() {
+            if (!planSeleccionado) {
+                notificar('error', 'Selecciona un plan primero');
+                return;
+            }
+            
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF({
+                orientation: 'portrait',
+                unit: 'mm',
+                format: 'a4'
+            });
+            
+            const precios = {
+                mensual: '11.99',
+                cuatrimestral: '44.99',
+                anual: '120'
+            };
+            
+            const nombres = {
+                mensual: 'Mensual',
+                cuatrimestral: 'Semestral',
+                anual: 'Anual'
+            };
+            
+            const planNumero = planSeleccionado === 'mensual' ? '1' : 
+                               planSeleccionado === 'cuatrimestral' ? '2' : '3';
+            
+            const referencia = `POD-${Date.now().toString().slice(-8)}-${planNumero}`;
+            
+            // COLORES CORPORATIVOS
+            const primaryColor = [10, 76, 124]; // #0a4c7c
+            const accentColor = [0, 166, 126];   // #00a67e
+            const grayColor = [100, 116, 139];   // #64748b
+            
+            // HEADER
+            doc.setFillColor(245, 247, 250);
+            doc.rect(0, 0, 210, 40, 'F');
+            
+            doc.setFontSize(24);
+            doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+            doc.setFont('helvetica', 'bold');
+            doc.text('PodoElite Pro', 20, 25);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(grayColor[0], grayColor[1], grayColor[2]);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Plataforma profesional para podología', 20, 32);
+            
+            // LÍNEA DECORATIVA
+            doc.setDrawColor(accentColor[0], accentColor[1], accentColor[2]);
+            doc.setLineWidth(0.5);
+            doc.line(20, 45, 190, 45);
+            
+            // TÍTULO
+            doc.setFontSize(18);
+            doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Instrucciones de pago', 20, 55);
+            
+            // DATOS DEL PLAN
+            doc.setFontSize(11);
+            doc.setTextColor(50, 50, 50);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Plan seleccionado:', 20, 70);
+            doc.setFont('helvetica', 'normal');
+            doc.text(`${nombres[planSeleccionado]} · $${precios[planSeleccionado]}`, 80, 70);
+            
+            doc.setFont('helvetica', 'bold');
+            doc.text('Referencia:', 20, 80);
+            doc.setFont('helvetica', 'normal');
+            doc.text(referencia, 80, 80);
+            
+            doc.setFont('helvetica', 'bold');
+            doc.text('Fecha:', 20, 90);
+            doc.setFont('helvetica', 'normal');
+            doc.text(new Date().toLocaleDateString('es-ES'), 80, 90);
+            
+            // RECUADRO DE DATOS BANCARIOS
+            doc.setFillColor(248, 250, 252);
+            doc.setDrawColor(grayColor[0], grayColor[1], grayColor[2]);
+            doc.roundedRect(20, 105, 170, 65, 3, 3, 'FD');
+            
+            doc.setFontSize(12);
+            doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Datos bancarios', 30, 120);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(50, 50, 50);
+            
+            doc.setFont('helvetica', 'bold');
+            doc.text('Banco:', 30, 135);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Banco Pichincha', 80, 135);
+            
+            doc.setFont('helvetica', 'bold');
+            doc.text('Tipo:', 30, 145);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Ahorros', 80, 145);
+            
+            doc.setFont('helvetica', 'bold');
+            doc.text('Número:', 30, 155);
+            doc.setFont('helvetica', 'normal');
+            doc.text('2211508621', 80, 155);
+            
+            doc.setFont('helvetica', 'bold');
+            doc.text('Titular:', 30, 165);
+            doc.setFont('helvetica', 'normal');
+            doc.text('Axel Calderon', 80, 165);
+            
+            // INSTRUCCIONES
+            doc.setFontSize(11);
+            doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Pasos a seguir:', 20, 190);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(50, 50, 50);
+            doc.setFont('helvetica', 'normal');
+            
+            doc.text('1. Realiza la transferencia por el monto exacto', 25, 205);
+            doc.text('2. Incluye la referencia en el concepto del pago', 25, 215);
+            doc.text('3. Envía el comprobante a soporte.tecnico.axel@gmail.com', 25, 225);
+            doc.text('4. Recibirás confirmación en menos de 30 minutos', 25, 235);
+            
+            // FOOTER
+            doc.setDrawColor(accentColor[0], accentColor[1], accentColor[2]);
+            doc.setLineWidth(0.5);
+            doc.line(20, 260, 190, 260);
+            
+            doc.setFontSize(9);
+            doc.setTextColor(grayColor[0], grayColor[1], grayColor[2]);
+            doc.text('PodoElite Pro · Plataforma profesional para podología', 20, 275);
+            doc.text(`Documento generado el ${new Date().toLocaleString('es-ES')}`, 20, 282);
+            
+            doc.save(`PodoElite_Pago_${nombres[planSeleccionado]}.pdf`);
+            notificar('exito', 'PDF generado correctamente');
+        };
         
-        if (error) throw error;
+        // PDF informativo de planes
+        window.generarPDFInfo = function() {
+            const { jsPDF } = window.jspdf;
+            const doc = new jsPDF();
+            
+            const primaryColor = [10, 76, 124];
+            const accentColor = [0, 166, 126];
+            
+            doc.setFillColor(245, 247, 250);
+            doc.rect(0, 0, 210, 40, 'F');
+            
+            doc.setFontSize(24);
+            doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+            doc.setFont('helvetica', 'bold');
+            doc.text('PodoElite Pro', 20, 25);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(100, 116, 139);
+            doc.text('Guía completa de planes', 20, 32);
+            
+            doc.setDrawColor(accentColor[0], accentColor[1], accentColor[2]);
+            doc.line(20, 45, 190, 45);
+            
+            doc.setFontSize(16);
+            doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Planes disponibles', 20, 60);
+            
+            // Plan Mensual
+            doc.setFontSize(12);
+            doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Plan Mensual · $11.99/mes', 20, 80);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(50, 50, 50);
+            doc.setFont('helvetica', 'normal');
+            doc.text('• Pacientes ilimitados', 25, 92);
+            doc.text('• Citas ilimitadas', 25, 100);
+            doc.text('• Exploraciones completas', 25, 108);
+            doc.text('• Certificados médicos', 25, 116);
+            doc.text('• PDF profesionales', 25, 124);
+            
+            // Plan Semestral
+            doc.setFontSize(12);
+            doc.setTextColor(accentColor[0], accentColor[1], accentColor[2]);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Plan Semestral · $44.99/4 meses', 20, 145);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(50, 50, 50);
+            doc.setFont('helvetica', 'normal');
+            doc.text('• Todo lo del plan mensual', 25, 157);
+            doc.text('• Soporte prioritario', 25, 165);
+            doc.text('• Backup automático', 25, 173);
+            doc.text('• Estadísticas avanzadas', 25, 181);
+            
+            // Plan Anual
+            doc.setFontSize(12);
+            doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+            doc.setFont('helvetica', 'bold');
+            doc.text('Plan Anual · $120/año (13 meses)', 20, 202);
+            
+            doc.setFontSize(10);
+            doc.setTextColor(50, 50, 50);
+            doc.setFont('helvetica', 'normal');
+            doc.text('• Todo lo incluido', 25, 214);
+            doc.text('• Soporte 24/7 prioritario', 25, 222);
+            doc.text('• Consultoría personalizada', 25, 230);
+            doc.text('• API de integración', 25, 238);
+            
+            doc.save('PodoElite_Guia_Planes.pdf');
+            notificar('exito', 'Guía de planes generada');
+        };
         
-        notificar('exito', '✅ Solicitud enviada. El administrador activará tu cuenta al recibir el pago.');
-        cerrarModal();
-        
-    } catch (error) {
-        console.error('Error:', error);
-        notificar('error', 'Error al enviar solicitud: ' + error.message);
-    } finally {
-        mostrarLoading(false);
-    }
+       // PDF de confirmación de solicitud (VERSIÓN CORREGIDA)
+window.generarPDFConfirmacion = function() {
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF();
+    
+    const primaryColor = [10, 76, 124];
+    const successColor = [16, 185, 129];
+    
+    // HEADER
+    doc.setFillColor(245, 247, 250);
+    doc.rect(0, 0, 210, 40, 'F');
+    
+    doc.setFontSize(24);
+    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.setFont('helvetica', 'bold');
+    doc.text('PodoElite Pro', 20, 25);
+    
+    // TÍTULO PRINCIPAL (SIN CARACTERES RAROS)
+    doc.setFontSize(22);
+    doc.setTextColor(successColor[0], successColor[1], successColor[2]);
+    doc.setFont('helvetica', 'bold');
+    doc.text('SOLICITUD RECIBIDA', 20, 60);
+    
+    // MENSAJE DE CONFIRMACIÓN
+    doc.setFontSize(12);
+    doc.setTextColor(50, 50, 50);
+    doc.setFont('helvetica', 'normal');
+    doc.text('Hemos recibido tu solicitud de pago correctamente.', 20, 80);
+    doc.text('Tu cuenta será activada en menos de 30 minutos hábiles.', 20, 92);
+    
+    // RECUADRO DE PRÓXIMOS PASOS
+    doc.setFillColor(248, 250, 252);
+    doc.setDrawColor(200, 200, 200);
+    doc.roundedRect(20, 110, 170, 50, 3, 3, 'FD');
+    
+    doc.setFontSize(14);
+    doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.setFont('helvetica', 'bold');
+    doc.text('Próximos pasos:', 30, 125);
+    
+    doc.setFontSize(11);
+    doc.setTextColor(50, 50, 50);
+    doc.setFont('helvetica', 'normal');
+    doc.text('1. Recibirás un email de confirmación', 30, 140);
+    doc.text('2. Tu cuenta se activará automáticamente', 30, 152);
+    
+    // FOOTER
+    doc.setDrawColor(primaryColor[0], primaryColor[1], primaryColor[2]);
+    doc.setLineWidth(0.5);
+    doc.line(20, 190, 190, 190);
+    
+    doc.setFontSize(9);
+    doc.setTextColor(150, 150, 150);
+    doc.text('PodoElite Pro - Plataforma profesional para podología', 20, 205);
+    doc.text(`Documento generado el ${new Date().toLocaleDateString('es-ES')}`, 20, 215);
+    
+    doc.save('PodoElite_Confirmacion_Solicitud.pdf');
+    notificar('exito', 'PDF de confirmación generado');
 };
         
         // ============================================
-        // VER MI SUSCRIPCIÓN ACTUAL
+        // VER MI SUSCRIPCIÓN
         // ============================================
         window.verMiSuscripcion = async function() {
             mostrarLoading(true);
@@ -523,7 +1271,7 @@ window.guardarSolicitudPago = async function() {
                 
                 const { data: perfil, error } = await supabase
                     .from('perfiles')
-                    .select('nombre_doctor, email_profesional, suscripcion, plan, fecha_inicio, fecha_vencimiento')
+                    .select('nombre_doctor, email_profesional, suscripcion, plan, fecha_inicio, fecha_vencimiento, solicitud_estado')
                     .eq('id', user.id)
                     .single();
                 
@@ -544,19 +1292,22 @@ window.guardarSolicitudPago = async function() {
                 };
                 
                 Swal.fire({
-                    title: '📋 MI SUSCRIPCIÓN',
+                    title: 'Mi suscripción',
                     html: `
-                        <div style="text-align: left; padding: 10px;">
-                            <p><strong>👤 Doctor:</strong> ${perfil.nombre_doctor}</p>
-                            <p><strong>📧 Email:</strong> ${perfil.email_profesional}</p>
-                            <p><strong>📊 Estado:</strong> ${estadoEmoji[perfil.suscripcion]} ${perfil.suscripcion.toUpperCase()}</p>
-                            <p><strong>📅 Plan:</strong> ${planTexto[perfil.plan]}</p>
-                            <p><strong>🗓️ Inicio:</strong> ${new Date(perfil.fecha_inicio).toLocaleDateString()}</p>
-                            <p><strong>⏰ Vence:</strong> ${new Date(perfil.fecha_vencimiento).toLocaleDateString()}</p>
+                        <div style="text-align: left; background: #f8fafc; padding: 1.5rem; border-radius: 12px;">
+                            <p style="margin: 0.5rem 0;"><strong>👤 Doctor:</strong> ${perfil.nombre_doctor}</p>
+                            <p style="margin: 0.5rem 0;"><strong>📧 Email:</strong> ${perfil.email_profesional}</p>
+                            <p style="margin: 0.5rem 0;"><strong>📊 Estado:</strong> ${estadoEmoji[perfil.suscripcion]} ${perfil.suscripcion}</p>
+                            <p style="margin: 0.5rem 0;"><strong>📅 Plan:</strong> ${planTexto[perfil.plan]}</p>
+                            <p style="margin: 0.5rem 0;"><strong>🗓️ Inicio:</strong> ${new Date(perfil.fecha_inicio).toLocaleDateString()}</p>
+                            <p style="margin: 0.5rem 0;"><strong>⏰ Vence:</strong> ${new Date(perfil.fecha_vencimiento).toLocaleDateString()}</p>
+                            ${perfil.solicitud_estado === 'pendiente' ? 
+                                '<p style="color: #f59e0b; margin-top: 1rem;">⏳ Solicitud pendiente de aprobación</p>' : ''}
                         </div>
                     `,
                     icon: 'info',
-                    confirmButtonText: 'OK'
+                    confirmButtonText: 'Cerrar',
+                    confirmButtonColor: '#0a4c7c'
                 });
                 
             } catch (error) {
@@ -566,6 +1317,13 @@ window.guardarSolicitudPago = async function() {
                 mostrarLoading(false);
             }
         };
+        
+        // Cerrar modal con ESC
+        window.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape') {
+                cerrarModal();
+            }
+        });
     </script>
 </body>
 </html>
