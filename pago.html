@@ -568,13 +568,13 @@
             </div>
         </div>
         
-        <!-- PLANES DE PAGO -->
+        <!-- PLANES DE PAGO (PRECIOS ACTUALIZADOS) -->
         <div class="planes-grid">
-            <!-- PLAN MENSUAL -->
+            <!-- PLAN MENSUAL $15 -->
             <div class="plan-card" onclick="seleccionarPlan('mensual')" id="planMensual">
                 <div class="plan-header">
                     <div class="plan-nombre">Plan Mensual</div>
-                    <div class="plan-precio">$11.99 <small>/mes</small></div>
+                    <div class="plan-precio">$15.00 <small>/mes</small></div>
                     <div class="plan-detalle">Sin permanencia · Cancela cuando quieras</div>
                 </div>
                 <ul class="plan-caracteristicas">
@@ -590,14 +590,14 @@
                 </button>
             </div>
             
-            <!-- PLAN 4 MESES (POPULAR) -->
+            <!-- PLAN 4 MESES $50 (POPULAR) -->
             <div class="plan-card popular" onclick="seleccionarPlan('cuatrimestral')" id="planCuatrimestral">
                 <div class="popular-badge">MÁS ELEGIDO · 85% de los profesionales</div>
                 <div class="plan-header">
                     <div class="plan-nombre">Plan Semestral</div>
-                    <div class="plan-precio">$44.99 <small>/4 meses</small></div>
-                    <span class="plan-ahorro">Ahorras $3.97 (8% dto.)</span>
-                    <div class="plan-detalle" style="margin-top: 1rem;">Equivale a $11.25/mes</div>
+                    <div class="plan-precio">$50.00 <small>/4 meses</small></div>
+                    <span class="plan-ahorro">Ahorras $10 · 17% dto.</span>
+                    <div class="plan-detalle" style="margin-top: 1rem;">Equivale a $12.50/mes</div>
                 </div>
                 <ul class="plan-caracteristicas">
                     <li><i class="fas fa-check-circle"></i> Todo lo del plan mensual</li>
@@ -612,13 +612,13 @@
                 </button>
             </div>
             
-            <!-- PLAN ANUAL 13 MESES -->
+            <!-- PLAN ANUAL 13 MESES $130 -->
             <div class="plan-card" onclick="seleccionarPlan('anual')" id="planAnual">
                 <div class="plan-header">
                     <div class="plan-nombre">Plan Anual</div>
-                    <div class="plan-precio">$120 <small>/año</small></div>
+                    <div class="plan-precio">$130.00 <small>/año</small></div>
                     <span class="plan-ahorro">1 MES COMPLETO GRATIS</span>
-                    <div class="plan-detalle" style="margin-top: 1rem;">13 meses · $9.23/mes</div>
+                    <div class="plan-detalle" style="margin-top: 1rem;">13 meses · $10.00/mes</div>
                 </div>
                 <ul class="plan-caracteristicas">
                     <li><i class="fas fa-check-circle"></i> Todo lo incluido</li>
@@ -722,7 +722,7 @@
         }
         
         // ============================================
-        // FUNCIÓN: Seleccionar plan
+        // FUNCIÓN: Seleccionar plan (con nuevos precios)
         // ============================================
         window.seleccionarPlan = function(plan) {
             document.querySelectorAll('.plan-card').forEach(card => {
@@ -738,9 +738,9 @@
             planSeleccionado = plan;
             
             const nombres = {
-                mensual: 'Mensual ($11.99/mes)',
-                cuatrimestral: 'Semestral ($44.99)',
-                anual: 'Anual 13 meses ($120)'
+                mensual: 'Mensual ($15.00/mes)',
+                cuatrimestral: 'Semestral ($50.00)',
+                anual: 'Anual 13 meses ($130.00)'
             };
             
             notificar('exito', `✅ Plan seleccionado: ${nombres[plan]}`);
@@ -760,9 +760,9 @@
             const contenido = document.getElementById('modalContenido');
             
             const precios = {
-                mensual: '11.99',
-                cuatrimestral: '44.99',
-                anual: '120'
+                mensual: '15.00',
+                cuatrimestral: '50.00',
+                anual: '130.00'
             };
             
             const nombres = {
@@ -897,7 +897,7 @@
         };
         
         // ============================================
-        // FUNCIÓN: Guardar solicitud de pago
+        // FUNCIÓN: Guardar solicitud de pago (con nuevos precios)
         // ============================================
         window.guardarSolicitudPago = async function() {
             mostrarLoading(true);
@@ -912,9 +912,9 @@
                 }
                 
                 const precios = {
-                    mensual: '11.99',
-                    cuatrimestral: '44.99',
-                    anual: '120'
+                    mensual: '15.00',
+                    cuatrimestral: '50.00',
+                    anual: '130.00'
                 };
                 
                 const planNumero = planSeleccionado === 'mensual' ? '1' : 
@@ -950,10 +950,10 @@
         };
         
         // ============================================
-        // FUNCIONES PDF PROFESIONALES
+        // FUNCIONES PDF PROFESIONALES (actualizadas)
         // ============================================
         
-        // PDF de pago (detalles bancarios)
+        // PDF de pago (detalles bancarios) - precios actualizados
         window.generarPDFPago = function() {
             if (!planSeleccionado) {
                 notificar('error', 'Selecciona un plan primero');
@@ -968,9 +968,9 @@
             });
             
             const precios = {
-                mensual: '11.99',
-                cuatrimestral: '44.99',
-                anual: '120'
+                mensual: '15.00',
+                cuatrimestral: '50.00',
+                anual: '130.00'
             };
             
             const nombres = {
@@ -1094,7 +1094,7 @@
             notificar('exito', 'PDF generado correctamente');
         };
         
-        // PDF informativo de planes
+        // PDF informativo de planes - precios actualizados
         window.generarPDFInfo = function() {
             const { jsPDF } = window.jspdf;
             const doc = new jsPDF();
@@ -1126,7 +1126,7 @@
             doc.setFontSize(12);
             doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
             doc.setFont('helvetica', 'bold');
-            doc.text('Plan Mensual · $11.99/mes', 20, 80);
+            doc.text('Plan Mensual · $15.00/mes', 20, 80);
             
             doc.setFontSize(10);
             doc.setTextColor(50, 50, 50);
@@ -1141,7 +1141,7 @@
             doc.setFontSize(12);
             doc.setTextColor(accentColor[0], accentColor[1], accentColor[2]);
             doc.setFont('helvetica', 'bold');
-            doc.text('Plan Semestral · $44.99/4 meses', 20, 145);
+            doc.text('Plan Semestral · $50.00/4 meses', 20, 145);
             
             doc.setFontSize(10);
             doc.setTextColor(50, 50, 50);
@@ -1155,7 +1155,7 @@
             doc.setFontSize(12);
             doc.setTextColor(primaryColor[0], primaryColor[1], primaryColor[2]);
             doc.setFont('helvetica', 'bold');
-            doc.text('Plan Anual · $120/año (13 meses)', 20, 202);
+            doc.text('Plan Anual · $130.00/año (13 meses)', 20, 202);
             
             doc.setFontSize(10);
             doc.setTextColor(50, 50, 50);
