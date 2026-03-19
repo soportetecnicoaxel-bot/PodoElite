@@ -1,0 +1,816 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PodoElite Pro · Acceso Profesional</title>
+
+    <!-- Content Security Policy (seguridad) -->
+    <meta http-equiv="Content-Security-Policy" content="
+        default-src 'self';
+        script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'unsafe-inline' 'unsafe-eval';
+        style-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline';
+        img-src 'self' data: https://qagxnpmztawislaehkfa.supabase.co;
+        connect-src 'self' https://qagxnpmztawislaehkfa.supabase.co https://podo-elite.vercel.app;
+        font-src 'self' https://cdnjs.cloudflare.com;
+    ">
+
+    <!-- Librerías externas -->
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/dompurify/3.0.5/purify.min.js"></script>
+
+    <style>
+        /* ===== VARIABLES PROFESIONALES ===== */
+        :root {
+            --primary: #0a4c7c;
+            --primary-dark: #063454;
+            --accent: #06b6d4;
+            --accent-dark: #0891b2;
+            --bg: #0a0a0c;
+            --card: #141417;
+            --gray: #2a2a2f;
+            --gray-light: #3a3a3f;
+            --success: #10b981;
+            --danger: #ef4444;
+            --warning: #f59e0b;
+            --text-light: #e2e8f0;
+            --text-muted: #94a3b8;
+            --shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg) 0%, #1a1a1f 100%);
+            color: var(--text-light);
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 1.5rem;
+        }
+
+        .card {
+            background: var(--card);
+            padding: 2.5rem;
+            border-radius: 2rem;
+            width: 100%;
+            max-width: 480px;
+            border: 1px solid var(--gray);
+            box-shadow: var(--shadow);
+            animation: fadeIn 0.5s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 1.5rem;
+        }
+
+        .logo i {
+            font-size: 3rem;
+            color: var(--accent);
+            background: rgba(6, 182, 212, 0.1);
+            padding: 1rem;
+            border-radius: 1.5rem;
+        }
+
+        h2 {
+            text-align: center;
+            margin-bottom: 1.5rem;
+            color: var(--accent);
+            font-size: 1.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.75rem;
+        }
+
+        h2 i {
+            font-size: 2rem;
+        }
+
+        .input-group {
+            margin-bottom: 1.25rem;
+            position: relative;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: var(--text-muted);
+            margin-bottom: 0.25rem;
+            letter-spacing: 0.5px;
+        }
+
+        .input-group input,
+        .input-group select {
+            width: 100%;
+            padding: 0.875rem 1rem;
+            background: var(--gray);
+            border: 2px solid transparent;
+            color: white;
+            border-radius: 1rem;
+            outline: none;
+            transition: all 0.2s;
+            font-size: 0.95rem;
+        }
+
+        .input-group input:focus {
+            border-color: var(--accent);
+            background: #1c1c20;
+            box-shadow: 0 0 0 3px rgba(6, 182, 212, 0.2);
+        }
+
+        .input-group input.error {
+            border-color: var(--danger);
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .char-count {
+            position: absolute;
+            right: 1rem;
+            bottom: 0.75rem;
+            font-size: 0.7rem;
+            color: var(--text-muted);
+        }
+
+        .password-strength {
+            margin-top: 0.5rem;
+            display: flex;
+            gap: 0.25rem;
+        }
+
+        .strength-bar {
+            height: 4px;
+            flex: 1;
+            background: var(--gray-light);
+            border-radius: 2px;
+            transition: background 0.3s;
+        }
+
+        .strength-bar.active:nth-child(1) { background: var(--danger); }
+        .strength-bar.active:nth-child(2) { background: var(--warning); }
+        .strength-bar.active:nth-child(3) { background: var(--success); }
+        .strength-bar.active:nth-child(4) { background: var(--accent); }
+
+        .password-hint {
+            font-size: 0.7rem;
+            color: var(--text-muted);
+            margin-top: 0.5rem;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+
+        .hint-item {
+            display: flex;
+            align-items: center;
+            gap: 0.25rem;
+        }
+
+        .hint-item.valid {
+            color: var(--success);
+        }
+
+        .hint-item i {
+            font-size: 0.6rem;
+        }
+
+        .terms-checkbox {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 1.5rem 0;
+            cursor: pointer;
+        }
+
+        .terms-checkbox input {
+            width: 1.25rem;
+            height: 1.25rem;
+            accent-color: var(--accent);
+        }
+
+        .terms-checkbox span {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .terms-checkbox a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+
+        .btn {
+            width: 100%;
+            padding: 1rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
+            color: white;
+            border: none;
+            border-radius: 1rem;
+            font-weight: 600;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 25px rgba(6, 182, 212, 0.3);
+        }
+
+        .btn:disabled {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+
+        .btn .spinner {
+            width: 1.25rem;
+            height: 1.25rem;
+            border: 3px solid rgba(255,255,255,0.3);
+            border-top-color: white;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            display: none;
+        }
+
+        .btn.loading .spinner {
+            display: inline-block;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .toggle {
+            text-align: center;
+            margin-top: 1.5rem;
+            font-size: 0.9rem;
+            color: var(--text-muted);
+            cursor: pointer;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            transition: background 0.2s;
+        }
+
+        .toggle:hover {
+            background: rgba(255,255,255,0.05);
+        }
+
+        .toggle b {
+            color: var(--accent);
+            font-weight: 600;
+        }
+
+        .hidden {
+            display: none;
+        }
+
+        .link-simple {
+            color: var(--accent);
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .error-message, .success-message {
+            padding: 0.75rem 1rem;
+            border-radius: 0.75rem;
+            margin-bottom: 1.5rem;
+            font-size: 0.9rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border: 1px solid;
+            display: none;
+        }
+
+        .error-message {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border-color: rgba(239, 68, 68, 0.3);
+        }
+
+        .success-message {
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            border-color: rgba(16, 185, 129, 0.3);
+        }
+
+        .tooltip {
+            position: relative;
+            display: inline-block;
+            margin-left: 0.25rem;
+        }
+
+        .tooltip i {
+            color: var(--text-muted);
+            font-size: 0.8rem;
+        }
+
+        .tooltip .tooltip-text {
+            visibility: hidden;
+            width: 200px;
+            background: var(--gray-light);
+            color: white;
+            text-align: center;
+            padding: 0.5rem;
+            border-radius: 0.5rem;
+            position: absolute;
+            z-index: 1;
+            bottom: 125%;
+            left: 50%;
+            margin-left: -100px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            font-size: 0.7rem;
+        }
+
+        .tooltip:hover .tooltip-text {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        /* Responsive */
+        @media (max-width: 480px) {
+            .card {
+                padding: 1.5rem;
+            }
+            h2 {
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+  <div class="card">
+    <div class="logo">
+        <i class="fas fa-clinic-medical"></i>
+    </div>
+
+    <!-- ========== LOGIN (visible primero) ========== -->
+    <div id="login-view">
+        <h2><i class="fas fa-sign-in-alt"></i> Iniciar Sesión</h2>
+        <div class="error-message" id="login-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <span id="login-error-text"></span>
+        </div>
+
+        <div class="input-group">
+            <label><i class="fas fa-envelope"></i> Correo electrónico</label>
+            <input type="email" id="l-email" placeholder="doctor@ejemplo.com" autocomplete="email">
+        </div>
+
+        <div class="input-group">
+            <label><i class="fas fa-lock"></i> Contraseña</label>
+            <input type="password" id="l-pass" placeholder="••••••••" autocomplete="current-password">
+        </div>
+
+        <p style="text-align: right; margin-top: -0.5rem; margin-bottom: 1.5rem;">
+            <span class="link-simple" onclick="toggleVistas('recuperar')">
+                <i class="fas fa-key"></i> ¿Olvidaste tu contraseña?
+            </span>
+        </p>
+
+        <button class="btn" id="login-btn" onclick="handleLogin()">
+            <span class="spinner"></span>
+            <span class="text">ENTRAR</span>
+        </button>
+
+        <div class="toggle" onclick="toggleVistas('registro')">
+            ¿Eres nuevo? <b>Regístrate aquí</b>
+        </div>
+    </div>
+
+    <!-- ========== REGISTRO (oculto) ========== -->
+    <div id="reg-view" class="hidden">
+        <h2><i class="fas fa-user-plus"></i> Crear Cuenta</h2>
+        <div class="error-message" id="reg-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <span id="reg-error-text"></span>
+        </div>
+
+        <div class="input-group">
+            <label><i class="fas fa-user-md"></i> Nombre completo <span class="tooltip"><i class="fas fa-info-circle"></i><span class="tooltip-text">Nombre profesional</span></span></label>
+            <input type="text" id="r-name" placeholder="Dr. Juan Pérez" autocomplete="name">
+        </div>
+
+        <div class="input-group">
+            <label><i class="fas fa-stethoscope"></i> Especialidad</label>
+            <input type="text" id="r-spec" placeholder="Podología clínica...">
+        </div>
+
+        <div class="input-group">
+            <label><i class="fas fa-phone"></i> Teléfono / WhatsApp</label>
+            <input type="tel" id="r-phone" placeholder="+593 123 456 789">
+        </div>
+
+        <div class="input-group">
+            <label><i class="fas fa-envelope"></i> Correo electrónico</label>
+            <input type="email" id="r-email" placeholder="doctor@ejemplo.com" autocomplete="email">
+        </div>
+
+        <div class="input-group">
+            <label><i class="fas fa-lock"></i> Contraseña</label>
+            <input type="password" id="r-pass" placeholder="Mínimo 8 caracteres" oninput="checkPasswordStrength()" autocomplete="new-password">
+            <div class="char-count" id="pass-count">0/8</div>
+            <div class="password-strength" id="strength-bars">
+                <div class="strength-bar"></div>
+                <div class="strength-bar"></div>
+                <div class="strength-bar"></div>
+                <div class="strength-bar"></div>
+            </div>
+            <div class="password-hint">
+                <span class="hint-item" id="hint-length"><i class="fas fa-circle"></i> 8+ caracteres</span>
+                <span class="hint-item" id="hint-number"><i class="fas fa-circle"></i> 1 número</span>
+                <span class="hint-item" id="hint-uppercase"><i class="fas fa-circle"></i> 1 mayúscula</span>
+                <span class="hint-item" id="hint-special"><i class="fas fa-circle"></i> 1 carácter especial</span>
+            </div>
+        </div>
+
+        <label class="terms-checkbox">
+            <input type="checkbox" id="r-terms">
+            <span>Acepto los <a href="#" onclick="showTerms()">términos y condiciones</a></span>
+        </label>
+
+        <button class="btn" id="register-btn" onclick="handleRegister()" disabled>
+            <span class="spinner"></span>
+            <span class="text">REGISTRARSE</span>
+        </button>
+
+        <div class="toggle" onclick="toggleVistas('login')">
+            ¿Ya tienes cuenta? <b>Inicia sesión</b>
+        </div>
+    </div>
+
+    <!-- ========== RECUPERAR CONTRASEÑA (oculto) ========== -->
+    <div id="recuperar-view" class="hidden">
+        <h2><i class="fas fa-key"></i> Recuperar Acceso</h2>
+        <div class="error-message" id="reset-error">
+            <i class="fas fa-exclamation-circle"></i>
+            <span id="reset-error-text"></span>
+        </div>
+        <div class="success-message" id="reset-success">
+            <i class="fas fa-check-circle"></i>
+            <span>¡Enlace enviado! Revisa tu correo.</span>
+        </div>
+
+        <p style="font-size: 0.9rem; color: var(--text-muted); margin-bottom: 1.5rem; text-align: center;">
+            Ingresa tu correo y te enviaremos un enlace para restablecer tu contraseña.
+        </p>
+
+        <div class="input-group">
+            <label><i class="fas fa-envelope"></i> Correo electrónico</label>
+            <input type="email" id="reset-email" placeholder="doctor@ejemplo.com">
+        </div>
+
+        <button class="btn" id="reset-btn" onclick="solicitarRecuperacion()">
+            <span class="spinner"></span>
+            <span class="text">ENVIAR ENLACE</span>
+        </button>
+
+        <div class="toggle" onclick="toggleVistas('login')">
+            <i class="fas fa-arrow-left"></i> Volver al <b>inicio</b>
+        </div>
+    </div>
+</div>
+
+<!-- Modal de términos -->
+<div id="terms-modal" style="display: none; position: fixed; top:0; left:0; width:100%; height:100%; background: rgba(0,0,0,0.8); z-index:1000; justify-content: center; align-items: center;">
+    <div style="background: var(--card); padding: 2rem; border-radius: 1.5rem; max-width: 500px; max-height: 80vh; overflow-y: auto;">
+        <h3 style="color: var(--accent); margin-bottom: 1rem;">Términos y Condiciones</h3>
+        <div style="color: #ccc; font-size: 0.9rem; line-height: 1.6;">
+            <p>1. La información médica registrada es confidencial.</p>
+            <p>2. El profesional es responsable de la veracidad de los datos.</p>
+            <p>3. PodoElite no se hace responsable por mal uso del sistema.</p>
+            <p>4. Al registrarte aceptas recibir comunicaciones del sistema.</p>
+            <p>5. Puedes solicitar la eliminación de tus datos en cualquier momento.</p>
+            <p>6. Esta Aplicacion  es de paga .</p>
+        </div>
+        <button class="btn" onclick="closeTerms()" style="margin-top: 1.5rem;">Cerrar</button>
+    </div>
+</div>
+    <script type="module">
+    // ============================================
+    // CONFIGURACIÓN SUPABASE
+    // ============================================
+    import { supabase } from './config.js';
+    import { mostrarLoading, notificar, manejarError } from './utils.js';
+
+    // ============================================
+    // VERIFICAR SI YA HAY SESIÓN ACTIVA (NUEVO)
+    // ============================================
+    (async () => {
+        const { data: { session } } = await supabase.auth.getSession();
+        if (session) {
+            // Si ya hay sesión, redirigir al menú
+            window.location.href = 'menu.html';
+        }
+    })();
+
+    // ============================================
+    // PROTECCIÓN XSS (DOMPurify)
+    // ============================================
+    const originalInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML').set;
+    Object.defineProperty(Element.prototype, 'innerHTML', {
+        set(value) {
+            const sanitized = window.DOMPurify ? window.DOMPurify.sanitize(value) : value;
+            return originalInnerHTML.call(this, sanitized);
+        }
+    });
+
+    // ============================================
+    // VARIABLES GLOBALES
+    // ============================================
+    let passwordValid = { length: false, number: false, uppercase: false, special: false };
+    const intentosFallidos = {};
+    const bloqueos = {};
+
+    // ============================================
+    // FUNCIONES AUXILIARES
+    // ============================================
+    function mostrarError(elementId, mensaje) {
+        const errorDiv = document.getElementById(elementId);
+        const errorText = document.getElementById(elementId + '-text');
+        if (errorDiv && errorText) {
+            errorText.textContent = DOMPurify.sanitize(mensaje);
+            errorDiv.style.display = 'flex';
+            setTimeout(() => { errorDiv.style.display = 'none'; }, 5000);
+        }
+    }
+
+    function setLoading(buttonId, loading) {
+        const btn = document.getElementById(buttonId);
+        if (!btn) return;
+        if (loading) {
+            btn.classList.add('loading');
+            btn.disabled = true;
+        } else {
+            btn.classList.remove('loading');
+            btn.disabled = false;
+        }
+    }
+
+    // Rate limiting
+    function verificarRateLimit(email) {
+        const ahora = Date.now();
+        if (bloqueos[email] && bloqueos[email] > ahora) {
+            const minutos = Math.ceil((bloqueos[email] - ahora) / 60000);
+            notificar('warning', `Demasiados intentos. Espera ${minutos} minutos.`);
+            return false;
+        }
+        if (!intentosFallidos[email]) intentosFallidos[email] = [];
+        intentosFallidos[email] = intentosFallidos[email].filter(t => ahora - t < 15 * 60 * 1000);
+        if (intentosFallidos[email].length >= 3) {
+            bloqueos[email] = ahora + 15 * 60 * 1000;
+            notificar('error', 'Has excedido el número de intentos. Bloqueado 15 minutos.');
+            return false;
+        }
+        return true;
+    }
+
+    function registrarIntentoFallido(email) {
+        if (!intentosFallidos[email]) intentosFallidos[email] = [];
+        intentosFallidos[email].push(Date.now());
+        const usados = intentosFallidos[email].length;
+        const restantes = 3 - usados;
+        if (restantes > 0) notificar('warning', `Intento ${usados} de 3. Quedan ${restantes}.`);
+    }
+
+    // ============================================
+    // VALIDACIÓN DE CONTRASEÑA
+    // ============================================
+    window.checkPasswordStrength = function() {
+        const pass = document.getElementById('r-pass').value;
+        document.getElementById('pass-count').textContent = pass.length + '/8';
+
+        passwordValid.length = pass.length >= 8;
+        passwordValid.number = /[0-9]/.test(pass);
+        passwordValid.uppercase = /[A-Z]/.test(pass);
+        passwordValid.special = /[!@#$%^&*(),.?":{}|<>]/.test(pass);
+
+        actualizarHint('hint-length', passwordValid.length);
+        actualizarHint('hint-number', passwordValid.number);
+        actualizarHint('hint-uppercase', passwordValid.uppercase);
+        actualizarHint('hint-special', passwordValid.special);
+
+        const validCount = Object.values(passwordValid).filter(v => v).length;
+        document.querySelectorAll('.strength-bar').forEach((bar, i) => {
+            if (i < validCount) bar.classList.add('active');
+            else bar.classList.remove('active');
+        });
+
+        const termsChecked = document.getElementById('r-terms').checked;
+        document.getElementById('register-btn').disabled = !(Object.values(passwordValid).every(v => v) && termsChecked);
+    };
+
+    function actualizarHint(id, valido) {
+        const el = document.getElementById(id);
+        const icon = el.querySelector('i');
+        if (valido) {
+            el.classList.add('valid');
+            el.classList.remove('invalid');
+            icon.className = 'fas fa-check-circle';
+        } else {
+            el.classList.add('invalid');
+            el.classList.remove('valid');
+            icon.className = 'fas fa-circle';
+        }
+    }
+
+    // ============================================
+    // NAVEGACIÓN ENTRE VISTAS
+    // ============================================
+    window.toggleVistas = function(vista) {
+        document.getElementById('reg-view').classList.add('hidden');
+        document.getElementById('login-view').classList.add('hidden');
+        document.getElementById('recuperar-view').classList.add('hidden');
+        if (vista === 'registro') document.getElementById('reg-view').classList.remove('hidden');
+        if (vista === 'login') document.getElementById('login-view').classList.remove('hidden');
+        if (vista === 'recuperar') document.getElementById('recuperar-view').classList.remove('hidden');
+    };
+
+    window.showTerms = () => document.getElementById('terms-modal').style.display = 'flex';
+    window.closeTerms = () => document.getElementById('terms-modal').style.display = 'none';
+
+    window.onclick = (e) => {
+        if (e.target === document.getElementById('terms-modal'))
+            document.getElementById('terms-modal').style.display = 'none';
+    };
+
+    document.getElementById('r-terms')?.addEventListener('change', (e) => {
+        document.getElementById('register-btn').disabled = !(Object.values(passwordValid).every(v => v) && e.target.checked);
+    });
+
+    // ============================================
+    // REGISTRO
+    // ============================================
+    window.handleRegister = async function() {
+        const email = document.getElementById('r-email').value.trim();
+        const password = document.getElementById('r-pass').value;
+        const full_name = document.getElementById('r-name').value.trim();
+        const specialty = document.getElementById('r-spec').value.trim();
+        const phone = document.getElementById('r-phone').value.trim();
+
+        if (!full_name || !specialty || !email || !phone) {
+            mostrarError('reg-error', 'Todos los campos son obligatorios');
+            return;
+        }
+        if (!Object.values(passwordValid).every(v => v)) {
+            mostrarError('reg-error', 'La contraseña no cumple los requisitos');
+            return;
+        }
+
+        setLoading('register-btn', true);
+        mostrarLoading(true);
+
+        const { data, error } = await supabase.auth.signUp({
+            email,
+            password,
+            options: { data: { full_name, specialty, phone } }
+        });
+
+        setLoading('register-btn', false);
+        mostrarLoading(false);
+
+        if (error) {
+            mostrarError('reg-error', error.message);
+        } else {
+            const user = data.user;
+            if (user) {
+                await supabase.from('perfiles').upsert({
+                    id: user.id,
+                    nombre_doctor: full_name,
+                    especialidad: specialty,
+                    telefono_doctor: phone,
+                    suscripcion: 'gratis'
+                });
+            }
+            notificar('exito', '¡Registro exitoso! Revisa tu correo para confirmar (si aplica).');
+            setTimeout(() => window.toggleVistas('login'), 2000);
+        }
+    };
+
+    // ============================================
+    // LOGIN
+    // ============================================
+    window.handleLogin = async function() {
+        const email = document.getElementById('l-email').value.trim();
+        const password = document.getElementById('l-pass').value;
+
+        if (!email || !password) {
+            notificar('warning', 'Ingresa email y contraseña');
+            return;
+        }
+        if (!verificarRateLimit(email)) return;
+
+        const btn = document.querySelector('#login-view .btn');
+        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Verificando...';
+        btn.disabled = true;
+        mostrarLoading(true);
+
+        const { data, error } = await supabase.auth.signInWithPassword({ email, password });
+
+        if (error) {
+            registrarIntentoFallido(email);
+            mostrarLoading(false);
+            notificar('error', 'Credenciales incorrectas');
+            btn.innerHTML = 'ENTRAR';
+            btn.disabled = false;
+            return;
+        }
+
+        delete intentosFallidos[email];
+        delete bloqueos[email];
+
+        const { data: perfil, error: perfilError } = await supabase
+            .from('perfiles')
+            .select('suscripcion, nombre_doctor')
+            .eq('id', data.user.id)
+            .maybeSingle();
+
+        mostrarLoading(false);
+
+        if (perfilError) {
+            window.location.href = 'perfil.html';
+            return;
+        }
+
+        if (perfil?.suscripcion === 'vencido') {
+            await supabase.auth.signOut();
+            notificar('error', 'Suscripción vencida');
+            btn.innerHTML = 'ENTRAR';
+            btn.disabled = false;
+            return;
+        }
+
+        window.location.href = perfil?.nombre_doctor && perfil.nombre_doctor !== 'Doctor/a' ? 'menu.html' : 'perfil.html';
+    };
+
+    // ============================================
+    // RECUPERAR CONTRASEÑA
+    // ============================================
+    window.solicitarRecuperacion = async function() {
+        const correo = document.getElementById('reset-email').value.trim();
+
+        if (!correo) {
+            mostrarError('reset-error', 'Ingresa tu correo electrónico');
+            return;
+        }
+
+        setLoading('reset-btn', true);
+        mostrarLoading(true);
+
+        const { error } = await supabase.auth.resetPasswordForEmail(correo, {
+            redirectTo: 'https://podo-elite.vercel.app/cambiar-clave.html',
+        });
+
+        setLoading('reset-btn', false);
+        mostrarLoading(false);
+
+        if (error) {
+            mostrarError('reset-error', error.message);
+        } else {
+            document.getElementById('reset-success').style.display = 'flex';
+            setTimeout(() => {
+                document.getElementById('reset-success').style.display = 'none';
+                window.toggleVistas('login');
+            }, 4000);
+        }
+    };
+</script>
+</body>
+</html>

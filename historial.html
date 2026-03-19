@@ -908,7 +908,7 @@ Object.defineProperty(Element.prototype, 'innerHTML', {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                window.location.href = 'index.html';
+                window.location.href = 'login.html';
                 return;
             }
             const { data: perfil } = await supabase
