@@ -2,6 +2,7 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
+    <link rel="icon" type="image/x-icon" href="images/favicon.png">
     <title>PodoElite | Nueva Clave</title>
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js"></script>
     <!-- SweetAlert2 -->
@@ -95,7 +96,7 @@ Object.defineProperty(Element.prototype, 'innerHTML', {
         } else {
             notificar('exito', '¡Contraseña cambiada! Ahora puedes entrar con tu nueva clave.');
             setTimeout(() => {
-                window.location.href = "index.html";
+                window.location.href = "login.html";
             }, 2000);
         }
     };

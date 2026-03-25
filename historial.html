@@ -1,20 +1,17 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-   
-
-
- <meta charset="UTF-8">
+    <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+     <link rel="icon" type="image/x-icon" href="images/favicon.png">
     <title>PodoElite Pro - Historial Clínico</title>
     
-    <!-- CSP (Seguridad) -->
     <meta http-equiv="Content-Security-Policy" content="
         default-src 'self';
         script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'unsafe-inline';
         style-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline';
         img-src 'self' data: https://qagxnpmztawislaehkfa.supabase.co;
-        connect-src 'self' https://qagxnpmztawislaehkfa.supabase.co;
+        connect-src 'self' https://qagxnpmztawislaehkfa.supabase.co https://cdn.jsdelivr.net;
         font-src 'self' https://cdnjs.cloudflare.com;
     ">
     
@@ -23,10 +20,11 @@
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.5.23/jspdf.plugin.autotable.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@3.2.4/dist/purify.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
     
-
     <style>
+        /* (Todo el CSS permanece igual) */
         * {
             margin: 0;
             padding: 0;
@@ -53,7 +51,6 @@
             min-height: 100vh;
         }
 
-        /* Menú Hamburguesa */
         .menu-container {
             position: fixed;
             top: 20px;
@@ -146,14 +143,12 @@
             border-top: 1px solid var(--border);
         }
 
-        /* Contenedor principal */
         .container {
             max-width: 1200px;
             margin: 0 auto;
             margin-left: 100px;
         }
 
-        /* Header */
         .header {
             background: white;
             border-radius: 20px;
@@ -199,7 +194,6 @@
             color: white;
         }
 
-        /* Sección de búsqueda */
         .search-section {
             background: white;
             border-radius: 20px;
@@ -275,7 +269,6 @@
             transform: translateY(-2px);
         }
 
-        /* Información del paciente */
         .patient-info {
             background: linear-gradient(135deg, var(--primary), var(--primary-dark));
             border-radius: 20px;
@@ -358,7 +351,6 @@
             font-weight: 600;
         }
 
-        /* Tabs */
         .tabs {
             display: flex;
             gap: 10px;
@@ -390,7 +382,6 @@
             color: white;
         }
 
-        /* Contenido de tabs */
         .tab-content {
             display: none;
         }
@@ -400,7 +391,6 @@
             animation: fadeIn 0.5s ease;
         }
 
-        /* Timeline para citas */
         .timeline {
             position: relative;
             padding-left: 30px;
@@ -481,7 +471,6 @@
             font-weight: 600;
         }
 
-        /* Tarjetas de exploración */
         .exploracion-card {
             background: white;
             border-radius: 15px;
@@ -541,7 +530,6 @@
             margin-right: 5px;
         }
 
-        /* Botones de acción */
         .action-buttons {
             display: flex;
             gap: 10px;
@@ -581,7 +569,6 @@
             transform: translateY(-2px);
         }
 
-        /* Mensajes sin resultados */
         .no-results {
             text-align: center;
             padding: 50px;
@@ -596,7 +583,6 @@
             margin-bottom: 20px;
         }
 
-        /* Loading overlay */
         .loading-overlay {
             position: fixed;
             top: 0;
@@ -624,7 +610,6 @@
             to { transform: rotate(360deg); }
         }
 
-        /* Pantalla de suspensión */
         .suspension-screen {
             position: fixed;
             top: 0;
@@ -677,20 +662,16 @@
             box-shadow: 0 15px 30px rgba(0,0,0,0.3);
         }
 
-        /* Responsive */
         @media (max-width: 768px) {
             .container {
                 margin-left: 20px;
             }
-            
             .search-box {
                 flex-direction: column;
             }
-            
             .patient-name {
                 font-size: 1.5rem;
             }
-            
             .tabs {
                 justify-content: center;
             }
@@ -699,39 +680,33 @@
 </head>
 <body>
 
-<!-- Loading Overlay -->
 <div class="loading-overlay" id="loadingOverlay">
     <div class="loader"></div>
 </div>
 
-<!-- Menú Hamburguesa -->
 <div class="menu-container">
     <button class="hamburger-btn" onclick="toggleMenu()">
         <i class="fas fa-bars"></i>
     </button>
-    
     <nav id="myMenu" class="menu-content">
         <div class="menu-header">
             <i class="fas fa-clinic-medical"></i> PodoElite Pro
         </div>
-        
         <a href="menu.html"><i class="fas fa-home"></i> Inicio</a>
         <a href="registro.html"><i class="fas fa-user-plus"></i> Registro Pacientes</a>
         <a href="citas.html"><i class="fas fa-calendar-check"></i> Gestión de Citas</a>
         <a href="examen.html"><i class="fas fa-stethoscope"></i> Exploración</a>
         <a href="historial.html" class="active"><i class="fas fa-file-medical"></i> Historial Clínico</a>
-        
         <hr>
         <a href="menu.html"><i class="fas fa-home"></i> Inicio</a>
         <a href="perfil.html"><i class="fas fa-user-md"></i> Mi Perfil Profesional</a>
-        <a href="#" onclick="cerrarSesion()" style="color: var(--danger); font-weight: bold;">
+        <a href="javascript:void(0)" onclick="cerrarSesion()" style="color: var(--danger); font-weight: bold;">
             <i class="fas fa-sign-out-alt"></i> CERRAR SESIÓN
         </a>
     </nav>
 </div>
 
 <div class="container">
-    <!-- Header -->
     <div class="header">
         <h1>
             <i class="fas fa-file-medical"></i>
@@ -743,7 +718,6 @@
         </div>
     </div>
 
-    <!-- Buscador -->
     <div class="search-section">
         <div class="search-title">
             <i class="fas fa-search"></i>
@@ -762,7 +736,6 @@
         </div>
     </div>
 
-    <!-- Información del Paciente -->
     <div class="patient-info" id="patientInfo">
         <div class="patient-header">
             <div class="patient-name">
@@ -803,7 +776,6 @@
         </div>
     </div>
 
-    <!-- Tabs -->
     <div class="tabs" id="tabsContainer" style="display: none;">
         <button class="tab active" onclick="cambiarTab('citas', this)">
             <i class="fas fa-calendar-check"></i> Citas
@@ -819,49 +791,51 @@
         </button>
     </div>
 
-    <!-- Contenido Citas -->
     <div class="tab-content active" id="tabCitas">
         <div class="timeline" id="citasTimeline"></div>
     </div>
 
-    <!-- Contenido Exploraciones -->
     <div class="tab-content" id="tabExploraciones">
         <div id="exploracionesList"></div>
     </div>
 
-    <!-- Contenido Antecedentes -->
     <div class="tab-content" id="tabAntecedentes">
         <div class="exploracion-card" id="antecedentesContent"></div>
     </div>
 
-    <!-- Contenido Informe Completo -->
     <div class="tab-content" id="tabCompleto">
         <div style="text-align: center; padding: 40px;">
-            <button class="btn btn-success" onclick="generarInformeCompleto()" style="font-size: 1.2rem; padding: 20px 40px;">
+            <button class="btn btn-success" onclick="generarInformeCompletoConDatos()" style="font-size: 1.2rem; padding: 20px 40px;">
                 <i class="fas fa-file-pdf"></i> GENERAR INFORME COMPLETO EN PDF
             </button>
         </div>
     </div>
 </div>
+
 <script type="module">
-    // ============================================
-    // IMPORTACIONES (archivos compartidos)
-    // ============================================
     import { supabase } from './config.js';
     import { 
         verificarSuscripcion, 
         mostrarLoading, 
         cerrarSesion as cerrarSesionUtil,
-        notificar,
-        confirmar 
+        notificar
     } from './utils.js';
-    
-    // Importar funciones PDF
     import { generarPDFCita } from './js/pdf/pdfCita.js';
     import { generarPDFExploracion } from './js/pdf/pdfExploracion.js';
     import { generarInformeCompleto } from './js/pdf/pdfInformeCompleto.js';
- // Después de los imports, agrega ESTA línea:
-const originalInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML').set;
+
+    // ============================================
+    // SANITIZACIÓN
+    // ============================================
+    function sanitizeHtml(html) {
+        if (window.DOMPurify) {
+            return window.DOMPurify.sanitize(html, {
+                ALLOWED_TAGS: ['div', 'p', 'span', 'strong', 'i', 'h3', 'button', 'br', 'hr', 'table', 'tr', 'td', 'th', 'thead', 'tbody'],
+                ALLOWED_ATTR: ['class', 'id', 'style', 'onclick', 'title']
+            });
+        }
+        return html;
+    }
 
     // ============================================
     // VARIABLES GLOBALES
@@ -870,25 +844,52 @@ const originalInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'in
     let currentTab = 'citas';
 
     // ============================================
-    // HACER FUNCIONES GLOBALES PARA EL HTML
+    // FUNCIONES GLOBALES
     // ============================================
     window.cerrarSesion = cerrarSesionUtil;
     window.generarPDFCita = generarPDFCita;
     window.generarPDFExploracion = generarPDFExploracion;
     window.generarInformeCompleto = generarInformeCompleto;
 
+    // NUEVA FUNCIÓN: Obtiene citas y exploraciones y luego genera informe completo
+    window.generarInformeCompletoConDatos = async function() {
+        if (!currentPaciente) {
+            notificar('warning', 'Primero busque un paciente');
+            return;
+        }
+        
+        mostrarLoading(true);
+        
+        try {
+            // Obtener citas del paciente
+            const { data: citas, error: errCitas } = await supabase
+                .from('citas')
+                .select('*')
+                .eq('cedula_paciente', currentPaciente.cedula)
+                .order('fecha_cita', { ascending: false });
+            
+            if (errCitas) throw errCitas;
+            
+            // Obtener exploraciones del paciente
+            const { data: exploraciones, error: errExploraciones } = await supabase
+                .from('exploracion_fisica')
+                .select('*')
+                .eq('cedula_paciente', currentPaciente.cedula)
+                .order('fecha', { ascending: false });
+            
+            if (errExploraciones) throw errExploraciones;
+            
+            // Llamar al módulo con los tres argumentos
+            await generarInformeCompleto(currentPaciente, citas || [], exploraciones || []);
+            
+        } catch (err) {
+            console.error('Error al generar informe completo:', err);
+            notificar('error', 'Error al generar el informe completo');
+        } finally {
+            mostrarLoading(false);
+        }
+    };
 
-
-   
-Object.defineProperty(Element.prototype, 'innerHTML', {
-    set(value) {
-        const sanitized = window.DOMPurify ? window.DOMPurify.sanitize(value) : value;
-        return originalInnerHTML.call(this, sanitized);
-    }
-});
-    // ============================================
-    // FUNCIONES DE UTILIDAD
-    // ============================================
     window.toggleMenu = function() {
         document.getElementById('myMenu').classList.toggle('show');
     }
@@ -908,7 +909,7 @@ Object.defineProperty(Element.prototype, 'innerHTML', {
         try {
             const { data: { user } } = await supabase.auth.getUser();
             if (!user) {
-                window.location.href = 'index.html';
+                window.location.href = 'login.html';
                 return;
             }
             const { data: perfil } = await supabase
@@ -969,7 +970,7 @@ Object.defineProperty(Element.prototype, 'innerHTML', {
             mostrarLoading(false);
         }
     }
-window.buscarPaciente = buscarPaciente;
+
     // ============================================
     // MOSTRAR PACIENTE
     // ============================================
@@ -1038,7 +1039,7 @@ window.buscarPaciente = buscarPaciente;
         if (!currentPaciente) return;
 
         const timeline = document.getElementById('citasTimeline');
-        timeline.innerHTML = '<div style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
+        timeline.innerHTML = sanitizeHtml('<div style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>');
 
         try {
             const { data, error } = await supabase
@@ -1050,39 +1051,50 @@ window.buscarPaciente = buscarPaciente;
             if (error) throw error;
 
             if (!data || data.length === 0) {
-                timeline.innerHTML = '<div class="no-results"><i class="fas fa-calendar-times"></i><h3>No hay citas registradas</h3></div>';
+                timeline.innerHTML = sanitizeHtml('<div class="no-results"><i class="fas fa-calendar-times"></i><h3>No hay citas registradas</h3></div>');
                 return;
             }
 
-            timeline.innerHTML = data.map(cita => `
+            const html = data.map(cita => `
                 <div class="timeline-item">
                     <div class="timeline-date">
-                        <i class="fas fa-calendar-alt"></i> ${cita.fecha_cita || 'N/A'} - ${cita.hora_cita || 'N/A'}
+                        <i class="fas fa-calendar-alt"></i> ${sanitizeHtml(cita.fecha_cita || 'N/A')} - ${sanitizeHtml(cita.hora_cita || 'N/A')}
                     </div>
-                    <div class="timeline-title">${cita.tipo_consulta || 'Consulta'}</div>
+                    <div class="timeline-title">${sanitizeHtml(cita.tipo_consulta || 'Consulta')}</div>
                     <div class="timeline-content">
-                        <p><strong>Motivo:</strong> ${cita.motivo_consulta || 'N/A'}</p>
-                        <p><strong>Diagnóstico:</strong> ${cita.diagnostico || 'N/A'}</p>
-                        <p><strong>Tratamiento:</strong> ${cita.tratamiento_evolucion || 'N/A'}</p>
-                        ${cita.observaciones ? `<p><strong>Observaciones:</strong> ${cita.observaciones}</p>` : ''}
+                        <p><strong>Motivo:</strong> ${sanitizeHtml(cita.motivo_consulta || 'N/A')}</p>
+                        <p><strong>Diagnóstico:</strong> ${sanitizeHtml(cita.diagnostico || 'N/A')}</p>
+                        <p><strong>Tratamiento:</strong> ${sanitizeHtml(cita.tratamiento_evolucion || 'N/A')}</p>
+                        ${cita.observaciones ? `<p><strong>Observaciones:</strong> ${sanitizeHtml(cita.observaciones)}</p>` : ''}
                     </div>
                     <div class="timeline-tags">
-                        <span class="tag"><i class="fas fa-user-md"></i> ${cita.medico_nombre || 'Médico'}</span>
+                        <span class="tag"><i class="fas fa-user-md"></i> ${sanitizeHtml(cita.medico_nombre || 'Médico')}</span>
                     </div>
                     <div class="action-buttons">
-                        <button class="btn btn-primary" onclick="verCita('${cita.id_cita_clinica}')">
+                        <button class="btn btn-primary" onclick="verCita('${sanitizeHtml(cita.id_cita_clinica)}')">
                             <i class="fas fa-eye"></i> Ver Detalles
                         </button>
-                        <button class="btn btn-success" onclick='generarPDFCita(${JSON.stringify(cita).replace(/'/g, "\\'")})'>
+                        <button class="btn btn-success" data-cita='${JSON.stringify(cita).replace(/'/g, "&#39;")}'>
                             <i class="fas fa-file-pdf"></i> PDF
                         </button>
                     </div>
                 </div>
             `).join('');
 
+            timeline.innerHTML = sanitizeHtml(html);
+            
+            // Asignar event listeners a los botones PDF para evitar inyección
+            document.querySelectorAll('.btn-success[data-cita]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const cita = JSON.parse(btn.getAttribute('data-cita'));
+                    generarPDFCita(cita);
+                });
+            });
+
         } catch (err) {
             console.error('Error al cargar citas:', err);
-            timeline.innerHTML = '<div class="no-results" style="color: red;">Error al cargar citas</div>';
+            timeline.innerHTML = sanitizeHtml('<div class="no-results" style="color: red;">Error al cargar citas</div>');
         }
     }
 
@@ -1093,7 +1105,7 @@ window.buscarPaciente = buscarPaciente;
         if (!currentPaciente) return;
 
         const container = document.getElementById('exploracionesList');
-        container.innerHTML = '<div style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>';
+        container.innerHTML = sanitizeHtml('<div style="text-align: center; padding: 40px;"><i class="fas fa-spinner fa-spin fa-2x"></i></div>');
 
         try {
             const { data, error } = await supabase
@@ -1105,16 +1117,16 @@ window.buscarPaciente = buscarPaciente;
             if (error) throw error;
 
             if (!data || data.length === 0) {
-                container.innerHTML = '<div class="no-results"><i class="fas fa-stethoscope"></i><h3>No hay exploraciones registradas</h3></div>';
+                container.innerHTML = sanitizeHtml('<div class="no-results"><i class="fas fa-stethoscope"></i><h3>No hay exploraciones registradas</h3></div>');
                 return;
             }
 
-            container.innerHTML = data.map(exp => `
+            const html = data.map(exp => `
                 <div class="exploracion-card">
                     <div class="exploracion-header">
-                        <span class="exploracion-id">${exp.exploracion_id || 'N/A'}</span>
+                        <span class="exploracion-id">${sanitizeHtml(exp.exploracion_id || 'N/A')}</span>
                         <span class="exploracion-fecha">
-                            <i class="fas fa-calendar-alt"></i> ${exp.fecha || 'N/A'}
+                            <i class="fas fa-calendar-alt"></i> ${sanitizeHtml(exp.fecha || 'N/A')}
                         </span>
                     </div>
                     <div class="exploracion-grid">
@@ -1127,24 +1139,35 @@ window.buscarPaciente = buscarPaciente;
                             .slice(0, 6)
                             .map(([key, value]) => `
                                 <div class="exploracion-item">
-                                    <strong>${key.replace(/_/g, ' ')}:</strong> ${value}
+                                    <strong>${sanitizeHtml(key.replace(/_/g, ' '))}:</strong> ${sanitizeHtml(value)}
                                 </div>
                             `).join('')}
                     </div>
                     <div class="action-buttons">
-                        <button class="btn btn-primary" onclick="verExploracion('${exp.exploracion_id}')">
+                        <button class="btn btn-primary" onclick="verExploracion('${sanitizeHtml(exp.exploracion_id)}')">
                             <i class="fas fa-eye"></i> Ver Completo
                         </button>
-                        <button class="btn btn-success" onclick='generarPDFExploracion(${JSON.stringify(exp).replace(/'/g, "\\'")})'>
+                        <button class="btn btn-success" data-exploracion-id='${sanitizeHtml(exp.exploracion_id)}'>
                             <i class="fas fa-file-pdf"></i> PDF
                         </button>
                     </div>
                 </div>
             `).join('');
 
+            container.innerHTML = sanitizeHtml(html);
+            
+            // Asignar event listeners para los botones PDF (pasando solo el ID)
+            document.querySelectorAll('.btn-success[data-exploracion-id]').forEach(btn => {
+                btn.addEventListener('click', (e) => {
+                    e.stopPropagation();
+                    const exploracionId = btn.getAttribute('data-exploracion-id');
+                    generarPDFExploracion(exploracionId);
+                });
+            });
+
         } catch (err) {
             console.error('Error al cargar exploraciones:', err);
-            container.innerHTML = '<div class="no-results" style="color: red;">Error al cargar exploraciones</div>';
+            container.innerHTML = sanitizeHtml('<div class="no-results" style="color: red;">Error al cargar exploraciones</div>');
         }
     }
 
@@ -1186,20 +1209,21 @@ window.buscarPaciente = buscarPaciente;
         const activos = antecedentes.filter(a => a.value);
 
         if (activos.length === 0) {
-            container.innerHTML = '<div class="no-results"><i class="fas fa-notes-medical"></i><h3>No hay antecedentes registrados</h3></div>';
+            container.innerHTML = sanitizeHtml('<div class="no-results"><i class="fas fa-notes-medical"></i><h3>No hay antecedentes registrados</h3></div>');
             return;
         }
 
-        container.innerHTML = `
+        const html = `
             <h3 style="margin-bottom: 20px;">Antecedentes Médicos</h3>
             <div class="exploracion-grid">
                 ${activos.map(a => `
                     <div class="exploracion-item">
-                        <strong>${a.label}:</strong> Sí ${a.tipo ? `(${a.tipo})` : ''}
+                        <strong>${sanitizeHtml(a.label)}:</strong> Sí ${a.tipo ? `(${sanitizeHtml(a.tipo)})` : ''}
                     </div>
                 `).join('')}
             </div>
         `;
+        container.innerHTML = sanitizeHtml(html);
     }
 
     // ============================================
@@ -1220,8 +1244,8 @@ window.buscarPaciente = buscarPaciente;
             Object.entries(data).forEach(([key, value]) => {
                 if (value && key !== 'doctor_id') {
                     html += `<tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 8px; font-weight: bold; width: 40%; background: #f8fafc;">${key.replace(/_/g, ' ').toUpperCase()}</td>
-                        <td style="padding: 8px;">${value}</td>
+                        <td style="padding: 8px; font-weight: bold; width: 40%; background: #f8fafc;">${sanitizeHtml(key.replace(/_/g, ' ').toUpperCase())}</td>
+                        <td style="padding: 8px;">${sanitizeHtml(String(value))}</td>
                     </tr>`;
                 }
             });
@@ -1230,7 +1254,7 @@ window.buscarPaciente = buscarPaciente;
 
             Swal.fire({
                 title: 'Detalles de la Cita',
-                html: html,
+                html: sanitizeHtml(html),
                 icon: 'info',
                 width: '800px',
                 confirmButtonText: 'Cerrar'
@@ -1260,8 +1284,8 @@ window.buscarPaciente = buscarPaciente;
             Object.entries(data).forEach(([key, value]) => {
                 if (value && key !== 'doctor_id' && key !== 'id') {
                     html += `<tr style="border-bottom: 1px solid #eee;">
-                        <td style="padding: 8px; font-weight: bold; width: 40%; background: #f8fafc;">${key.replace(/_/g, ' ').toUpperCase()}</td>
-                        <td style="padding: 8px;">${value}</td>
+                        <td style="padding: 8px; font-weight: bold; width: 40%; background: #f8fafc;">${sanitizeHtml(key.replace(/_/g, ' ').toUpperCase())}</td>
+                        <td style="padding: 8px;">${sanitizeHtml(String(value))}</td>
                     </tr>`;
                 }
             });
@@ -1270,7 +1294,7 @@ window.buscarPaciente = buscarPaciente;
 
             Swal.fire({
                 title: 'Exploración Física',
-                html: html,
+                html: sanitizeHtml(html),
                 icon: 'info',
                 width: '800px',
                 confirmButtonText: 'Cerrar'
