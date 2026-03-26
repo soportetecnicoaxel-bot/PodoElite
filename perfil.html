@@ -2,660 +2,850 @@
 <html lang="es">
 <head>
     <meta charset="UTF-8">
-    <link rel="icon" type="image/x-icon" href="images/favicon.png">
-    <title>PodoElite - Perfil Profesional</title>
-    
-    <!-- CSP (Seguridad) -->
-    <meta http-equiv="Content-Security-Policy" content="
-        default-src 'self';
-        script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'unsafe-inline';
-        style-src 'self' https://cdnjs.cloudflare.com 'unsafe-inline';
-        img-src 'self' data: https://qagxnpmztawislaehkfa.supabase.co;
-        connect-src 'self' https://qagxnpmztawislaehkfa.supabase.co;
-        font-src 'self' https://cdnjs.cloudflare.com;
-    ">
-    
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+    <title>PodoElite | Perfil Profesional</title>
+    <link rel="icon" type="image/x-icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'%3E%3Ccircle cx='50' cy='50' r='50' fill='%232c7da0'/%3E%3Cpath fill='white' d='M30 40 L70 40 L60 70 L40 70 Z'/%3E%3C/svg%3E">
+
+    <!-- SUPABASE -->
     <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,300;14..32,400;14..32,500;14..32,600;14..32,700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-    <!-- SweetAlert2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
-   
-   <style>
-        :root { 
-            --p: #0284c7; 
-            --p-dark: #0369a1; 
-            --p-light: #e0f2fe;
-            --bg: #f8fafc; 
+    <script src="https://cdn.jsdelivr.net/npm/browser-image-compression@2.0.2/dist/browser-image-compression.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.0/build/qrcode.min.js"></script>
+    <style>
+        /* (mismo CSS que antes, sin cambios) */
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #0f172a;
+            --primary-light: #1e293b;
+            --accent: #06b6d4;
+            --accent-light: #22d3ee;
+            --accent-dark: #0891b2;
             --success: #10b981;
+            --warning: #f59e0b;
             --danger: #ef4444;
+            --gray-50: #f8fafc;
             --gray-100: #f1f5f9;
+            --gray-200: #e2e8f0;
+            --gray-300: #cbd5e1;
+            --gray-400: #94a3b8;
             --gray-500: #64748b;
+            --gray-600: #475569;
             --gray-700: #334155;
+            --gray-800: #1e293b;
+            --gray-900: #0f172a;
+            --glass-bg: rgba(255, 255, 255, 0.08);
+            --glass-border: rgba(255, 255, 255, 0.15);
+            --shadow-sm: 0 1px 3px rgba(0,0,0,0.05);
+            --shadow-md: 0 4px 12px rgba(0,0,0,0.03);
+            --shadow-lg: 0 10px 30px -10px rgba(0,0,0,0.05);
+            --radius-sm: 12px;
+            --radius-md: 18px;
+            --radius-lg: 24px;
+            --transition: all 0.2s ease;
         }
-        
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-        
-        body { 
-            font-family: 'Segoe UI', system-ui, sans-serif; 
-            background: linear-gradient(135deg, #f1f5f9 0%, #e2e8f0 100%);
-            display: flex; 
-            justify-content: center; 
-            padding: 20px;
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-light) 100%);
             min-height: 100vh;
-        }
-        
-        /* Menú Hamburguesa */
-        .menu-container {
-            position: fixed;
-            top: 20px;
-            left: 20px;
-            z-index: 1000;
+            padding: 2rem 1rem;
+            position: relative;
+            color: white;
         }
 
-        .hamburger-btn {
-            background: var(--p);
-            color: white;
-            border: none;
-            width: 55px;
-            height: 55px;
-            border-radius: 16px;
+        body::before {
+            content: '';
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 320"><path fill="rgba(6,182,212,0.03)" fill-opacity="1" d="M0,96L48,112C96,128,192,160,288,160C384,160,480,128,576,122.7C672,117,768,139,864,154.7C960,171,1056,181,1152,170.7C1248,160,1344,128,1392,112L1440,96L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path></svg>') repeat-x bottom;
+            background-size: cover;
+            opacity: 0.4;
+            pointer-events: none;
+            z-index: 0;
+        }
+        .menu-btn {
+            position: fixed;
+            top: 1.5rem;
+            left: 1.5rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            width: 3rem;
+            height: 3rem;
+            border-radius: var(--radius-md);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.1);
             cursor: pointer;
-            font-size: 24px;
-            box-shadow: 0 8px 20px rgba(2, 132, 199, 0.3);
-            transition: all 0.3s;
+            font-size: 1.3rem;
+            color: white;
             display: flex;
             align-items: center;
             justify-content: center;
+            z-index: 1000;
+            transition: var(--transition);
         }
 
-        .hamburger-btn:hover {
-            background: var(--p-dark);
-            transform: scale(1.05) rotate(90deg);
+        .menu-btn:hover {
+            background: var(--accent);
+            color: var(--primary);
+            border-color: rgba(255, 255, 255, 0.3);
+            transform: scale(1.05);
+            box-shadow: 0 12px 25px rgba(6, 182, 212, 0.3);
         }
 
-        .menu-content {
+        .menu {
+            position: fixed;
+            top: 5rem;
+            left: 1.5rem;
+            background: var(--glass-bg);
+            backdrop-filter: blur(16px);
+            border-radius: var(--radius-lg);
+            box-shadow: 0 20px 35px -10px rgba(0, 0, 0, 0.2);
+            min-width: 260px;
             display: none;
-            position: absolute;
-            top: 65px;
-            left: 0;
-            background: white;
-            min-width: 280px;
-            border-radius: 20px;
-            box-shadow: 0 20px 50px rgba(0,0,0,0.2);
-            overflow: hidden;
             flex-direction: column;
-            animation: slideDown 0.3s ease;
+            overflow: hidden;
+            z-index: 1000;
+            border: 1px solid var(--glass-border);
         }
 
-        @keyframes slideDown {
+        .menu.show {
+            display: flex;
+            animation: fadeSlide 0.2s ease;
+        }
+
+        @keyframes fadeSlide {
             from { opacity: 0; transform: translateY(-10px); }
             to { opacity: 1; transform: translateY(0); }
         }
 
-        .menu-content.show {
-            display: flex;
-        }
-
-        .menu-header {
-            padding: 20px;
-            background: linear-gradient(135deg, var(--p), var(--p-dark));
-            color: white;
-            font-weight: bold;
-            font-size: 1.1rem;
-        }
-
-        .menu-content a {
+        .menu a {
+            padding: 0.9rem 1.5rem;
             text-decoration: none;
-            color: var(--gray-700);
-            padding: 15px 25px;
-            font-size: 14px;
+            color: white;
             display: flex;
             align-items: center;
-            gap: 15px;
-            border-bottom: 1px solid #f1f5f9;
-            transition: all 0.2s;
+            gap: 0.85rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            font-size: 0.9rem;
+            font-weight: 500;
+            transition: var(--transition);
         }
 
-        .menu-content a i {
-            width: 20px;
-            color: var(--p);
+        .menu a i {
+            width: 1.3rem;
+            color: rgba(255, 255, 255, 0.8);
+            transition: var(--transition);
         }
 
-        .menu-content a:hover {
-            background: var(--p-light);
-            padding-left: 35px;
+        .menu a:hover {
+            background: rgba(6, 182, 212, 0.2);
+            padding-left: 1.8rem;
+            color: var(--accent-light);
         }
 
-        .menu-content a.active {
-            background: var(--p-light);
-            color: var(--p);
-            border-left: 4px solid var(--p);
+        .menu a:hover i {
+            color: var(--accent);
         }
 
-        .menu-content hr {
-            margin: 8px 0;
-            border: none;
-            border-top: 1px solid #f1f5f9;
+        .menu a.active {
+            background: rgba(6, 182, 212, 0.3);
+            border-left: 3px solid var(--accent);
+            color: var(--accent-light);
         }
-
-        /* Tarjeta principal */
+        hr { margin: 0.5rem 0; border-color: rgba(255, 255, 255, 0.1); }
         .card {
-            background: white;
-            width: 100%;
-            max-width: 700px;
-            padding: 40px;
-            border-radius: 30px;
-            box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
-            margin-left: 100px;
-            border: 1px solid rgba(255,255,255,0.5);
-            backdrop-filter: blur(10px);
+            max-width: 1000px;
+            margin: 0 auto;
+            background: var(--glass-bg);
+            backdrop-filter: blur(25px);
+            border-radius: var(--radius-lg);
+            border: 1px solid var(--glass-border);
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1), inset 0 1px 0 rgba(255,255,255,0.1);
+            overflow: hidden;
+            transition: transform 0.2s;
+            color: white;
+            position: relative;
         }
 
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, transparent, var(--accent), transparent);
+            border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+        }
+
+        .card:hover {
+            transform: translateY(-2px);
+        }
+        .card-inner { padding: 2rem 2rem 2.2rem; }
         h2 {
-            text-align: center;
-            color: var(--p);
             font-size: 2rem;
-            margin-bottom: 30px;
+            font-weight: 700;
+            margin-bottom: 2rem;
             display: flex;
             align-items: center;
-            justify-content: center;
-            gap: 10px;
+            gap: 0.75rem;
+            color: white;
+            text-shadow: 0 2px 4px rgba(0,0,0,0.2);
         }
 
         h2 i {
-            font-size: 2rem;
+            background: linear-gradient(135deg, var(--accent), var(--accent-light));
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            filter: drop-shadow(0 2px 4px rgba(6, 182, 212, 0.3));
         }
-
-        /* Foto de perfil */
-        .profile-container {
-            text-align: center;
-            margin-bottom: 30px;
-        }
-
-        .profile-pic {
-            width: 150px;
-            height: 150px;
-            border-radius: 50%;
-            object-fit: cover;
-            border: 5px solid var(--p);
-            box-shadow: 0 10px 25px rgba(2, 132, 199, 0.3);
-            transition: all 0.3s;
-        }
-
-        .profile-pic:hover {
-            transform: scale(1.02);
-            box-shadow: 0 15px 35px rgba(2, 132, 199, 0.4);
-        }
-
-        .upload-btn {
-            background: none;
-            border: 2px solid var(--p);
-            color: var(--p);
-            padding: 10px 25px;
-            border-radius: 50px;
+        .brand-row { display: flex; flex-wrap: wrap; justify-content: center; gap: 1.5rem; margin-bottom: 2rem; align-items: flex-start; }
+        .profile-section, .logo-section { width: min(100%, 324.8px); display: flex; flex-direction: column; align-items: center; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.2); border-radius: 1.4rem; padding: 1rem; box-shadow: inset 0 0 0 1px rgba(255,255,255,0.08), 0 8px 20px rgba(0,0,0,0.12); }
+        .avatar { width: 100%; height: 100%; border-radius: 14px; object-fit: cover; border: 3px solid rgba(255,255,255,0.5); box-shadow: 0 15px 30px rgba(0,0,0,0.2), 0 0 0 4px rgba(64,224,208,0.3); background: rgba(255,255,255,0.2); transition: transform 0.2s ease, box-shadow 0.2s ease; }
+        .avatar:hover { transform: translateY(-2px); box-shadow: 0 18px 32px rgba(0,0,0,0.3), 0 0 0 4px rgba(64,224,208,0.5); }
+        .avatar-wrapper { position: relative; cursor: pointer; width: 100%; height: 212.4px; }
+        .avatar-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; border-radius: 14px; background: rgba(64, 224, 208, 0.8); backdrop-filter: blur(4px); display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.2s; }
+        .avatar-wrapper:hover .avatar-overlay { opacity: 1; }
+        .logo-img { width: 100%; height: 100%; object-fit: cover; border-radius: 14px; background: rgba(255,255,255,0.2); border: 3px solid rgba(255,255,255,0.5); box-shadow: 0 15px 30px rgba(0,0,0,0.2), 0 0 0 4px rgba(64,224,208,0.3); }
+        .logo-wrapper { position: relative; display: inline-block; width: 100%; height: 212.4px; }
+        .logo-overlay { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(64, 224, 208, 0.8); backdrop-filter: blur(4px); border-radius: 14px; display: flex; align-items: center; justify-content: center; opacity: 0; transition: 0.2s; cursor: pointer; }
+        .logo-wrapper:hover .logo-overlay { opacity: 1; }
+        .media-actions { margin-top: 0.7rem; display: flex; gap: 0.6rem; justify-content: center; flex-wrap: wrap; }
+        .btn-outline, .btn-outline-danger, .btn-save, .btn-danger {
+            border: none;
+            padding: 0.6rem 1.4rem;
+            border-radius: var(--radius-md);
             font-weight: 600;
             cursor: pointer;
-            transition: all 0.3s;
-            margin-top: 15px;
+            transition: var(--transition);
             display: inline-flex;
             align-items: center;
-            gap: 8px;
-            font-size: 0.9rem;
+            gap: 0.6rem;
+            font-size: 0.85rem;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(8px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
         }
 
-        .upload-btn:hover {
-            background: var(--p);
-            color: white;
+        .btn-outline:hover {
+            background: var(--accent);
+            color: var(--primary);
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(2, 132, 199, 0.3);
+            border-color: rgba(255, 255, 255, 0.4);
+            box-shadow: 0 6px 16px rgba(6, 182, 212, 0.3);
         }
 
-        /* Grid de campos */
-        .grid {
-            display: grid;
-            grid-template-columns: repeat(2, 1fr);
-            gap: 20px;
+        .btn-outline-danger {
+            background: rgba(239, 68, 68, 0.2);
+            border-color: rgba(239, 68, 68, 0.3);
         }
 
-        .full { 
-            grid-column: span 2; 
+        .btn-outline-danger:hover {
+            background: var(--danger);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3);
         }
 
-        .field {
-            display: flex;
-            flex-direction: column;
-            gap: 8px;
-        }
-
-        label {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--gray-500);
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        input, select {
-            padding: 14px;
-            border: 2px solid #e2e8f0;
-            border-radius: 12px;
-            font-size: 0.95rem;
-            transition: all 0.3s;
-            outline: none;
-            background: white;
-        }
-
-        input:focus, select:focus {
-            border-color: var(--p);
-            box-shadow: 0 0 0 4px rgba(2, 132, 199, 0.1);
-        }
-
-        input:hover, select:hover {
-            border-color: var(--p-light);
-        }
-
-        /* Botón guardar */
         .btn-save {
-            background: linear-gradient(135deg, var(--p), var(--p-dark));
-            color: white;
+            background: linear-gradient(135deg, var(--accent), var(--accent-dark));
             border: none;
-            padding: 18px;
-            border-radius: 16px;
-            width: 100%;
+            color: var(--primary);
             font-weight: 700;
-            font-size: 1.1rem;
-            cursor: pointer;
-            margin-top: 30px;
-            transition: all 0.3s;
-            display: flex;
-            align-items: center;
+            box-shadow: 0 4px 16px rgba(6, 182, 212, 0.3);
+            width: 100%;
             justify-content: center;
-            gap: 10px;
-            box-shadow: 0 10px 25px rgba(2, 132, 199, 0.3);
+            padding: 1rem;
+            font-size: 1rem;
+            margin-top: 1rem;
         }
 
         .btn-save:hover {
-            transform: translateY(-3px);
-            box-shadow: 0 15px 35px rgba(2, 132, 199, 0.4);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 24px rgba(6, 182, 212, 0.4);
+            filter: brightness(1.05);
         }
 
-        .btn-save:disabled {
-            opacity: 0.7;
-            transform: none;
-            cursor: not-allowed;
+        .btn-danger {
+            background: rgba(239, 68, 68, 0.8);
+            border-color: rgba(239, 68, 68, 0.5);
         }
 
-        /* Responsive */
-        @media (max-width: 768px) {
-            .card {
-                margin-left: 0;
-                padding: 20px;
-            }
-            
-            .grid {
-                grid-template-columns: 1fr;
-            }
-            
-            .full {
-                grid-column: span 1;
-            }
-            
-            .menu-container {
-                position: relative;
-                margin-bottom: 20px;
-            }
+        .btn-danger:hover {
+            background: var(--danger);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.3);
         }
+        .form-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 1.3rem; margin-bottom: 2rem; }
+        .full { grid-column: span 2; }
+        .field { display: flex; flex-direction: column; gap: 0.45rem; }
+        label { font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; color: rgba(255,255,255,0.8); }
+        label i { color: var(--accent); margin-right: 0.3rem; }
+        input, select { padding: 0.8rem 1rem; border: 1.5px solid rgba(255, 255, 255, 0.3); border-radius: 1rem; font-size: 0.9rem; transition: all 0.2s; background: rgba(0, 0, 0, 0.3); backdrop-filter: blur(4px); font-family: inherit; color: white; }
+        input::placeholder, select { color: rgba(255,255,255,0.6); }
+        input:focus, select:focus { outline: none; border-color: var(--accent); background: rgba(0, 0, 0, 0.5); box-shadow: 0 0 0 3px rgba(64,224,208,0.3); }
+        select option { background: #1c5a7a; color: white; }
+        .qr-section {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: var(--radius-md);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .qr-section h3 {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent-light);
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .qr-section p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.9rem;
+            margin-bottom: 1rem;
+        }
+        .danger-zone h3 {
+            font-size: 1rem;
+            color: #fecaca;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .danger-zone p {
+            color: rgba(255, 255, 255, 0.8);
+            font-size: 0.85rem;
+            margin-bottom: 1rem;
+        }
+
+        .danger-zone h3 i {
+            color: #fca5a5;
+        }
+        @media (max-width: 680px) { .brand-row { display: block; } .profile-section, .logo-section { width: 100%; margin-bottom: 1rem; } .avatar-wrapper, .logo-wrapper { height: 212.4px; } .form-grid { grid-template-columns: 1fr; } .full { grid-column: span 1; } .card-inner { padding: 1.3rem; } }
+        .fa, .fas, .far { pointer-events: none; }
+        button:disabled { opacity: 0.6; cursor: not-allowed; }
     </style>
 </head>
 <body>
 
-<!-- Menú Hamburguesa -->
-<div class="menu-container">
-    <button class="hamburger-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
-    
-    <nav id="myMenu" class="menu-content">
-        <div class="menu-header">
-            <i class="fas fa-clinic-medical"></i> PodoElite Pro
-        </div>
-        
-        <a href="menu.html"><i class="fas fa-home"></i> Inicio</a>
-        <a href="registro.html"><i class="fas fa-user-plus"></i> Registro de Paciente</a>
-        <a href="citas.html"><i class="fas fa-calendar-check"></i> Nueva Cita</a>
-        <a href="examen.html"><i class="fas fa-stethoscope"></i> Exploración</a>
-        <a href="historial.html"><i class="fas fa-file-medical"></i> Historial</a>
-        
-        <hr>
-        
-        <a href="perfil.html" class="active"><i class="fas fa-user-md"></i> Mi Perfil Profesional</a>
-        
-        <a href="#" onclick="cerrarSesion()" style="color: var(--danger); font-weight: bold;">
-            <i class="fas fa-sign-out-alt"></i> CERRAR SESIÓN
-        </a>
-    </nav>
+<button class="menu-btn" onclick="toggleMenu()"><i class="fas fa-bars"></i></button>
+<div id="menu" class="menu">
+    <a href="menu.html"><i class="fas fa-home"></i> Inicio</a>
+    <a href="registro.html"><i class="fas fa-user-plus"></i> Pacientes</a>
+    <a href="citas.html"><i class="fas fa-calendar-check"></i> Citas</a>
+    <a href="examen.html"><i class="fas fa-stethoscope"></i> Exploración</a>
+    <a href="historial.html"><i class="fas fa-file-medical"></i> Historial</a>
+    <hr>
+    <a href="#" class="active"><i class="fas fa-user-md"></i> Mi Perfil</a>
+    <a href="#" onclick="cerrarSesion()" style="color:#ffb3b3;"><i class="fas fa-sign-out-alt"></i> Cerrar sesión</a>
 </div>
 
 <div class="card">
-    <h2><i class="fas fa-user-md"></i> Mi Perfil Profesional</h2>
-    
-    <div class="profile-container">
-        <img id="img_preview" src="https://via.placeholder.com/150" class="profile-pic">
-        <input type="file" id="subir_foto" accept="image/*" style="display:none" onchange="preview(event)">
-        <button class="upload-btn" onclick="document.getElementById('subir_foto').click()">
-            <i class="fas fa-camera"></i> Cambiar Foto
-        </button>
-    </div>
+    <div class="card-inner">
+        <h2><i class="fas fa-id-card"></i> Mi Perfil Profesional</h2>
 
-    <div class="grid">
-        <div class="field full">
-            <label><i class="fas fa-user"></i> Nombre del Profesional</label>
-            <input type="text" id="nombre_doctor" placeholder="Dr. Juan Pérez">
-        </div>
-        
-        <div class="field">
-            <label><i class="fas fa-stethoscope"></i> Especialidad</label>
-            <input type="text" id="especialidad" placeholder="Podología Clínica">
-        </div>
-        
-        <div class="field">
-            <label><i class="fas fa-id-card"></i> Registro Médico</label>
-            <input type="text" id="registro_medico" placeholder="1234-2025-12345">
-        </div>
-        
-        <div class="field">
-            <label><i class="fas fa-phone"></i> Teléfono</label>
-            <input type="text" id="telefono_doctor" placeholder="+593 99 999 9999">
-        </div>
-        
-        <div class="field">
-            <label><i class="fas fa-hospital"></i> Centro Médico</label>
-            <input type="text" id="centro_medico" placeholder="Clínica PodoElite">
-        </div>
-        
-        <!-- País -->
-        <div class="field">
-            <label><i class="fas fa-globe"></i> País</label>
-            <select id="pais" onchange="cargarCiudadesPorPais()">
-                <option value="">Cargando países...</option>
-            </select>
-        </div>
-        
-        <!-- Ciudad -->
-        <div class="field">
-            <label><i class="fas fa-city"></i> Ciudad</label>
-            <select id="ciudad">
-                <option value="">Primero seleccione un país</option>
-            </select>
-        </div>
-        
-        <div class="field full">
-            <label><i class="fas fa-map-marker-alt"></i> Dirección del Consultorio</label>
-            <input type="text" id="direccion_consultorio" placeholder="Av. Principal 123, Oficina 5">
-        </div>
-    </div>
+        <div class="brand-row">
+            <div class="profile-section">
+                <div class="avatar-wrapper">
+                    <img id="img_perfil" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='324.8' height='212.4' viewBox='0 0 24 24' fill='%23ffffff'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E" class="avatar">
+                    <div class="avatar-overlay" onclick="document.getElementById('subir_perfil').click()"><i class="fas fa-camera"></i></div>
+                </div>
+                <div class="media-actions">
+                    <button class="btn-outline" onclick="document.getElementById('subir_perfil').click()"><i class="fas fa-upload"></i> Cambiar</button>
+                    <button class="btn-outline-danger" id="btnEliminarPerfil" style="display:none;" onclick="eliminarImagen('avatar')"><i class="fas fa-trash-alt"></i> Eliminar</button>
+                </div>
+                <input type="file" id="subir_perfil" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none">
+            </div>
 
-    <button class="btn-save" id="btnGuardar" onclick="guardarPerfil()">
-        <i class="fas fa-save"></i> GUARDAR CAMBIOS
-    </button>
+            <div class="logo-section">
+                <div class="logo-wrapper">
+                    <img id="img_logo" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='324.8' height='212.4' viewBox='0 0 24 24' fill='%23ffffff'%3E%3Cpath d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 8h-4v4h-4v-4H6V9h4V5h4v4h4v2z'/%3E%3C/svg%3E" class="logo-img">
+                    <div class="logo-overlay" onclick="document.getElementById('subir_logo').click()"><i class="fas fa-camera"></i></div>
+                </div>
+                <div class="media-actions">
+                    <button class="btn-outline" onclick="document.getElementById('subir_logo').click()"><i class="fas fa-upload"></i> Cambiar</button>
+                    <button class="btn-outline-danger" id="btnEliminarLogo" style="display:none;" onclick="eliminarImagen('logo')"><i class="fas fa-trash-alt"></i> Eliminar</button>
+                </div>
+                <input type="file" id="subir_logo" accept="image/jpeg,image/png,image/webp,image/gif" style="display:none">
+            </div>
+        </div>
+
+        <div class="form-grid">
+            <div class="field full"><label><i class="fas fa-user"></i> Nombre completo</label><input type="text" id="nombre_doctor" placeholder="Dr. Laura Fernández"></div>
+            <div class="field"><label><i class="fas fa-stethoscope"></i> Especialidad</label><input type="text" id="especialidad" placeholder="Podología Deportiva"></div>
+            <div class="field"><label><i class="fas fa-id-card"></i> Registro médico</label><input type="text" id="registro_medico" placeholder="1234-POD-2025"></div>
+            <div class="field"><label><i class="fas fa-phone-alt"></i> Teléfono</label><input type="text" id="telefono_doctor" placeholder="+593 99 999 9999"></div>
+            <div class="field"><label><i class="fas fa-hospital"></i> Centro médico</label><input type="text" id="centro_medico" placeholder="Clínica Podológica Avanzada"></div>
+            <div class="field"><label><i class="fas fa-globe-americas"></i> País</label><select id="pais"></select></div>
+            <div class="field"><label><i class="fas fa-city"></i> Ciudad</label><select id="ciudad"></select></div>
+            <div class="field full"><label><i class="fas fa-map-marker-alt"></i> Dirección</label><input type="text" id="direccion_consultorio" placeholder="Av. Siempre Viva 7420, Of. 3"></div>
+        </div>
+
+        <button class="btn-save" id="btnGuardar" onclick="guardarPerfil()"><i class="fas fa-save"></i> Guardar cambios</button>
+
+        <div class="qr-section">
+            <h3><i class="fas fa-qrcode"></i> Código QR para pacientes</h3>
+            <p>Comparte este código para que tus pacientes agenden citas contigo directamente.</p>
+            <div id="qr-code-container" style="margin: 1.5rem 0; display: flex; justify-content: center;"></div>
+            <div style="text-align: center;">
+                <button id="descargarQR" class="btn-outline" style="display: none;">
+                    <i class="fas fa-download"></i> Descargar QR
+                </button>
+            </div>
+        </div>
+
+        <div class="danger-zone">
+            <h3><i class="fas fa-exclamation-triangle"></i> Zona de peligro</h3>
+            <p>Eliminarás permanentemente tu perfil y toda la información. Acción irreversible.</p>
+            <button class="btn-danger" onclick="confirmarEliminarTodo()"><i class="fas fa-trash-alt"></i> Eliminar cuenta</button>
+        </div>
+
+    </div>
+  
 </div>
-
 <script type="module">
     import { supabase } from './config.js';
-    import { mostrarLoading, notificar, confirmar } from './utils.js';
-    import { cargarPaises, cargarCiudades } from './js/ciudades.js';
-// Después de los imports, agrega ESTA línea:
-const originalInnerHTML = Object.getOwnPropertyDescriptor(Element.prototype, 'innerHTML').set;
-   let paisesCache = [];
+    import { mostrarLoading, notificar, cerrarSesion as cerrarSesionUtil } from './utils.js';
+    import { cargarPaises as cargarPaisesDinamico, cargarCiudades as cargarCiudadesDinamico } from './ciudades.js';
 
-// ============================================
-    // VARIABLES GLOBALES
-    // ============================================
-    
+    // ---------- CONFIGURACIÓN ----------
+    const STORAGE_BUCKET = 'profile_images';   // Nombre de tu bucket
+    const FOTO_PERFIL_CACHE_KEY = 'podo_profile_foto_perfil_cache';
+    const LOGO_CACHE_KEY = 'podo_profile_logo_cache';  // para el logo
 
+    let currentUser = null;
+    let profileData = {
+        nombre_doctor: '', especialidad: '', registro_medico: '', telefono_doctor: '',
+        centro_medico: '', pais: '', ciudad: '', direccion_consultorio: '',
+        foto_perfil: null, foto_perfil_size: 0,
+        foto_url: null, foto_size: 0   // logo se guarda aquí
+    };
+    let pendingFotoFile = null, pendingLogoFile = null;
+    let pendingFotoDataUrl = null, pendingLogoDataUrl = null;
+    let paisesCache = [];
 
-Object.defineProperty(Element.prototype, 'innerHTML', {
-    set(value) {
-        const sanitized = window.DOMPurify ? window.DOMPurify.sanitize(value) : value;
-        return originalInnerHTML.call(this, sanitized);
+    // ---------- STORAGE (con sobrescritura) ----------
+    async function uploadToSupabaseStorage(file, userId, tipo) {
+        // tipo = 'foto' (perfil) o 'logo'
+        const fileName = tipo === 'foto' ? 'foto_perfil.jpg' : 'logo.jpg';
+        const filePath = `${userId}/${fileName}`;
+        console.log('Subiendo a:', filePath);
+        const { error } = await supabase.storage
+            .from(STORAGE_BUCKET)
+            .upload(filePath, file, { upsert: true, cacheControl: '3600' });
+        if (error) throw new Error(`Error al subir: ${error.message}`);
+        const { data: { publicUrl } } = supabase.storage.from(STORAGE_BUCKET).getPublicUrl(filePath);
+        console.log('URL pública obtenida:', publicUrl);
+        return { url: publicUrl, size: file.size };
     }
-});
-    // ============================================
-    // FUNCIONES DEL MENÚ
-    // ============================================
-    window.toggleMenu = function() {
-        document.getElementById("myMenu").classList.toggle("show");
-    };
 
-    document.addEventListener('click', function(event) {
-        const menu = document.getElementById("myMenu");
-        const btn = document.querySelector('.hamburger-btn');
-        if (!menu.contains(event.target) && !btn.contains(event.target)) {
-            menu.classList.remove('show');
+    async function deleteFromSupabaseStorage(userId, tipo) {
+        const fileName = tipo === 'foto' ? 'foto_perfil.jpg' : 'logo.jpg';
+        const filePath = `${userId}/${fileName}`;
+        const { error } = await supabase.storage.from(STORAGE_BUCKET).remove([filePath]);
+        if (error) console.warn('No se pudo eliminar archivo:', error.message);
+    }
+
+    // ---------- COMPRESIÓN Y CACHÉ ----------
+    async function comprimirYconvertir(file) {
+        try {
+            const options = { maxSizeMB: 0.4, maxWidthOrHeight: 800, useWebWorker: true, fileType: 'image/jpeg' };
+            const compressed = await imageCompression(file, options);
+            const dataUrl = await imageCompression.getDataUrlFromFile(compressed);
+            return { dataUrl, size: compressed.size, file: compressed };
+        } catch {
+            const dataUrl = await imageCompression.getDataUrlFromFile(file);
+            return { dataUrl, size: file.size, file };
         }
-    });
+    }
 
-    // ============================================
-    // CERRAR SESIÓN
-    // ============================================
-    window.cerrarSesion = async function() {
-        const confirmado = await confirmar('¿Deseas cerrar tu sesión profesional?');
-        if (!confirmado) return;
-        
-        mostrarLoading(true);
-        await supabase.auth.signOut();
-        window.location.href = "login.html";
-    };
+    function dataURLToFile(dataUrl, filename) {
+        const arr = dataUrl.split(',');
+        const mime = arr[0].match(/:(.*?);/)[1];
+        const bstr = atob(arr[1]);
+        let u8arr = new Uint8Array(bstr.length);
+        for (let i = 0; i < bstr.length; i++) u8arr[i] = bstr.charCodeAt(i);
+        return new File([u8arr], filename, { type: mime });
+    }
 
-    // ============================================
-    // CARGAR PAÍSES
-    // ============================================
-    window.cargarPaisesEnSelect = async function() {
+    function cargarCacheImagenesLocales() {
+        const foto = localStorage.getItem(FOTO_PERFIL_CACHE_KEY);
+        const logo = localStorage.getItem(LOGO_CACHE_KEY);
+        if (foto) {
+            try {
+                const data = JSON.parse(foto);
+                pendingFotoDataUrl = data.dataUrl;
+                document.getElementById('img_perfil').src = data.dataUrl;
+                document.getElementById('btnEliminarPerfil').style.display = 'inline-flex';
+            } catch (e) { localStorage.removeItem(FOTO_PERFIL_CACHE_KEY); }
+        }
+        if (logo) {
+            try {
+                const data = JSON.parse(logo);
+                pendingLogoDataUrl = data.dataUrl;
+                document.getElementById('img_logo').src = data.dataUrl;
+                document.getElementById('btnEliminarLogo').style.display = 'inline-flex';
+            } catch (e) { localStorage.removeItem(LOGO_CACHE_KEY); }
+        }
+    }
+
+    // ---------- PAÍSES Y CIUDADES ----------
+    async function cargarPaisesEnSelect() {
         const select = document.getElementById('pais');
-        select.innerHTML = '<option value="">Cargando países...</option>';
-        
+        select.innerHTML = '<option value="">Cargando...</option>';
         try {
-            const paises = await cargarPaises();
+            const paises = await cargarPaisesDinamico();
             paisesCache = paises;
-            
-            select.innerHTML = '<option value="">Seleccione un país...</option>';
-            paises.forEach(pais => {
-                select.innerHTML += `<option value="${pais.codigo}">${pais.nombre}</option>`;
-            });
-        } catch (error) {
-            console.error("Error cargando países:", error);
-            select.innerHTML = '<option value="">Error al cargar países</option>';
-        }
-    };
+            select.innerHTML = '<option value="">Seleccione país</option>';
+            paises.forEach(p => select.innerHTML += `<option value="${p.codigo}">${p.nombre}</option>`);
+        } catch (e) { select.innerHTML = '<option>Error</option>'; }
+    }
 
-    // ============================================
-    // CARGAR CIUDADES POR PAÍS
-    // ============================================
-    window.cargarCiudadesPorPais = async function() {
-        const paisCodigo = document.getElementById('pais').value;
+    async function cargarCiudadesPorPais() {
+        const pais = document.getElementById('pais').value;
         const ciudadSelect = document.getElementById('ciudad');
-        
-        if (!paisCodigo) {
-            ciudadSelect.innerHTML = '<option value="">Seleccione un país primero</option>';
-            return;
-        }
-        
-        ciudadSelect.innerHTML = '<option value="">Cargando ciudades...</option>';
-        
+        if (!pais) { ciudadSelect.innerHTML = '<option>Seleccione país</option>'; return; }
+        ciudadSelect.innerHTML = '<option>Cargando...</option>';
         try {
-            const ciudades = await cargarCiudades(paisCodigo);
-            
-            ciudadSelect.innerHTML = '<option value="">Seleccione una ciudad...</option>';
-            ciudades.forEach(ciudad => {
-                ciudadSelect.innerHTML += `<option value="${ciudad.nombre}">${ciudad.nombre}</option>`;
-            });
-        } catch (error) {
-            console.error("Error cargando ciudades:", error);
-            ciudadSelect.innerHTML = '<option value="">Error al cargar ciudades</option>';
-        }
-    };
+            const ciudades = await cargarCiudadesDinamico(pais);
+            ciudadSelect.innerHTML = '<option value="">Seleccione ciudad</option>';
+            ciudades.forEach(c => ciudadSelect.innerHTML += `<option value="${c.nombre}">${c.nombre}${c.region ? ` (${c.region})` : ''}</option>`);
+        } catch (e) { ciudadSelect.innerHTML = '<option>Error</option>'; }
+    }
 
-    // ============================================
-    // CARGAR DATOS DEL PERFIL
-    // ============================================
-    window.onload = async () => {
+    // ---------- CARGAR PERFIL ----------
+    async function cargarPerfilDesdeSupabase() {
         mostrarLoading(true);
-        
-        // Cargar países primero
-        await window.cargarPaisesEnSelect();
-        
-        try {
-            const { data: { user } } = await supabase.auth.getUser();
-            if (user) {
-                const { data: p, error } = await supabase
-                    .from('perfiles')
-                    .select('*')
-                    .eq('id', user.id)
-                    .maybeSingle(); // 👈 CAMBIADO DE single() A maybeSingle()
-                
-                if (error) throw error;
-                
-                if (p) {
-                    document.getElementById('nombre_doctor').value = p.nombre_doctor || '';
-                    document.getElementById('especialidad').value = p.especialidad || '';
-                    document.getElementById('registro_medico').value = p.registro_medico || '';
-                    document.getElementById('telefono_doctor').value = p.telefono_doctor || '';
-                    document.getElementById('centro_medico').value = p.centro_medico || '';
-                    document.getElementById('direccion_consultorio').value = p.direccion_consultorio || '';
-                    
-                    // Si tiene país guardado, seleccionarlo
-                    if (p.pais) {
-                        document.getElementById('pais').value = p.pais;
-                        await window.cargarCiudadesPorPais();
-                        
-                        // Si tiene ciudad guardada, seleccionarla
-                        if (p.ciudad) {
-                            setTimeout(() => {
-                                document.getElementById('ciudad').value = p.ciudad;
-                            }, 500);
-                        }
-                    }
-                    
-                    if(p.foto_url) document.getElementById('img_preview').src = p.foto_url;
-                }
-            }
-        } catch (error) {
-            console.error("Error cargando perfil:", error);
-            notificar('error', 'Error al cargar el perfil');
-        }
-        
-        mostrarLoading(false);
-    };
-
-    // ============================================
-    // PREVISUALIZAR IMAGEN
-    // ============================================
-    window.preview = function(e) {
-        const reader = new FileReader();
-        reader.onload = () => document.getElementById('img_preview').src = reader.result;
-        reader.readAsDataURL(e.target.files[0]);
-    };
-
-    // ============================================
-    // GUARDAR PERFIL
-    // ============================================
-    window.guardarPerfil = async function() {
-        const btn = document.getElementById('btnGuardar');
-        const originalText = btn.innerText;
-        btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Guardando...';
-        btn.disabled = true;
-        mostrarLoading(true);
-
         try {
             const { data: { user }, error: userError } = await supabase.auth.getUser();
-            if (userError || !user) throw new Error("No hay sesión activa.");
+            if (userError || !user) throw new Error('Sesión inválida');
+            currentUser = user;
+            const { data: perfil, error } = await supabase.from('perfiles').select('*').eq('id', user.id).maybeSingle();
+            if (error) throw error;
+            cargarCacheImagenesLocales();
+            if (perfil) {
+                profileData = {
+                    nombre_doctor: perfil.nombre_doctor || '',
+                    especialidad: perfil.especialidad || '',
+                    registro_medico: perfil.registro_medico || '',
+                    telefono_doctor: perfil.telefono_doctor || '',
+                    centro_medico: perfil.centro_medico || '',
+                    pais: perfil.pais || '',
+                    ciudad: perfil.ciudad || '',
+                    direccion_consultorio: perfil.direccion_consultorio || '',
+                    foto_perfil: perfil.foto_perfil || null,
+                    foto_perfil_size: perfil.foto_perfil_size || 0,
+                    foto_url: perfil.foto_url || null,
+                    foto_size: perfil.foto_size || 0
+                };
+                document.getElementById('nombre_doctor').value = profileData.nombre_doctor;
+                document.getElementById('especialidad').value = profileData.especialidad;
+                document.getElementById('registro_medico').value = profileData.registro_medico;
+                document.getElementById('telefono_doctor').value = profileData.telefono_doctor;
+                document.getElementById('centro_medico').value = profileData.centro_medico;
+                document.getElementById('direccion_consultorio').value = profileData.direccion_consultorio;
+                if (profileData.pais) {
+                    await cargarPaisesEnSelect();
+                    document.getElementById('pais').value = profileData.pais;
+                    await cargarCiudadesPorPais();
+                    if (profileData.ciudad) setTimeout(() => document.getElementById('ciudad').value = profileData.ciudad, 100);
+                } else await cargarPaisesEnSelect();
+                if (profileData.foto_perfil) {
+                    document.getElementById('img_perfil').src = profileData.foto_perfil;
+                    document.getElementById('btnEliminarPerfil').style.display = 'inline-flex';
+                } else if (pendingFotoDataUrl) {
+                    document.getElementById('img_perfil').src = pendingFotoDataUrl;
+                    document.getElementById('btnEliminarPerfil').style.display = 'inline-flex';
+                } else document.getElementById('btnEliminarPerfil').style.display = 'none';
+                if (profileData.foto_url) {
+                    document.getElementById('img_logo').src = profileData.foto_url;
+                    document.getElementById('btnEliminarLogo').style.display = 'inline-flex';
+                } else if (pendingLogoDataUrl) {
+                    document.getElementById('img_logo').src = pendingLogoDataUrl;
+                    document.getElementById('btnEliminarLogo').style.display = 'inline-flex';
+                } else document.getElementById('btnEliminarLogo').style.display = 'none';
+            } else await cargarPaisesEnSelect();
 
-            const { data: perfilActual } = await supabase
-                .from('perfiles')
-                .select('foto_url')
-                .eq('id', user.id)
-                .maybeSingle(); // 👈 CAMBIADO A maybeSingle()
-            
-            let fotoUrl = perfilActual ? perfilActual.foto_url : null;
+            // Generar QR después de cargar el perfil
+            const baseUrl = window.location.origin;
+            const qrUrl = `${baseUrl}/agendar-cita?doctor_id=${currentUser.id}`;
+            generarQR(qrUrl, 'qr-code-container');
+            document.getElementById('descargarQR').style.display = 'block';
 
-            // Subir foto si hay
-            const file = document.getElementById('subir_foto').files[0];
-            if (file) {
-                const tiposPermitidos = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
-                if (!tiposPermitidos.includes(file.type)) {
-                    notificar('error', 'Formato no válido. Usa JPG, PNG, GIF o WEBP');
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                    mostrarLoading(false);
-                    return;
-                }
-                if (file.size > 2 * 1024 * 1024) {
-                    notificar('error', 'La imagen no debe superar 2MB');
-                    btn.innerHTML = originalText;
-                    btn.disabled = false;
-                    mostrarLoading(false);
-                    return;
-                }
-                
-                const fileName = `${user.id}/profile.png`; // 👈 CON SLASH
-                const { error: uploadError } = await supabase.storage
-                    .from('avatares')
-                    .upload(fileName, file, { upsert: true });
+        } catch (err) {
+            console.error('Error en cargarPerfil:', err);
+            notificar('error', 'Error cargando perfil');
+            setTimeout(() => window.location.href = 'menu.html', 2000);
+        } finally { mostrarLoading(false); }
+    }
 
-                if (uploadError) throw uploadError;
+    // Función para generar QR con logo en el centro
+    function generarQR(url, containerId) {
+        const container = document.getElementById(containerId);
+        container.innerHTML = ''; // Limpiar
 
-                const { data: urlData } = supabase.storage
-                    .from('avatares')
-                    .getPublicUrl(fileName);
-                
-                fotoUrl = urlData.publicUrl;
+        QRCode.toCanvas(url, {
+            width: 256,
+            height: 256,
+            color: {
+                dark: '#000000',
+                light: '#ffffff'
+            },
+            errorCorrectionLevel: 'H'
+        }, function (error, canvas) {
+            if (error) {
+                console.error('Error generando QR:', error);
+                notificar('error', 'Error generando código QR');
+                return;
             }
 
-            // Guardar país y ciudad
-            const pais = document.getElementById('pais').value;
-            const ciudad = document.getElementById('ciudad').value;
-            
-            const paisSeleccionado = paisesCache.find(p => p.codigo === pais);
-            const paisNombre = paisSeleccionado ? paisSeleccionado.nombre : '';
+            // Agregar logo en el centro
+            const ctx = canvas.getContext('2d');
+            const centerX = canvas.width / 2;
+            const centerY = canvas.height / 2;
+            const logoSize = 50; // Tamaño del logo aumentado
 
-            const updates = {
-                id: user.id,
+            // Crear imagen del logo
+            const logoImg = new Image();
+            logoImg.crossOrigin = 'anonymous';
+
+            // Intentar usar el logo del doctor, si no, usar un icono predeterminado
+            const logoSrc = profileData?.foto_url || 'images/favicon.png';
+
+            logoImg.onload = function() {
+                // Dibujar fondo blanco detrás del logo para mejor contraste
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(centerX - logoSize/2 - 2, centerY - logoSize/2 - 2, logoSize + 4, logoSize + 4);
+
+                // Dibujar el logo
+                ctx.drawImage(logoImg, centerX - logoSize/2, centerY - logoSize/2, logoSize, logoSize);
+
+                // Agregar borde negro alrededor del logo
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(centerX - logoSize/2 - 2, centerY - logoSize/2 - 2, logoSize + 4, logoSize + 4);
+
+                container.appendChild(canvas);
+            };
+
+            logoImg.onerror = function() {
+                // Si falla cargar el logo, usar un icono SVG simple
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(centerX - logoSize/2 - 2, centerY - logoSize/2 - 2, logoSize + 4, logoSize + 4);
+
+                // Dibujar un icono simple (círculo con cruz médica)
+                ctx.fillStyle = '#0f172a'; // Color primario
+                ctx.beginPath();
+                ctx.arc(centerX, centerY, logoSize/2 - 2, 0, 2 * Math.PI);
+                ctx.fill();
+
+                // Cruz médica blanca
+                ctx.fillStyle = '#ffffff';
+                ctx.fillRect(centerX - 8, centerY - 2, 16, 4); // Horizontal
+                ctx.fillRect(centerX - 2, centerY - 8, 4, 16); // Vertical
+
+                // Borde negro
+                ctx.strokeStyle = '#000000';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(centerX - logoSize/2 - 2, centerY - logoSize/2 - 2, logoSize + 4, logoSize + 4);
+
+                container.appendChild(canvas);
+            };
+
+            logoImg.src = logoSrc;
+        });
+    }
+
+    // Evento para descargar el QR como imagen
+    document.getElementById('descargarQR').addEventListener('click', () => {
+        const canvas = document.querySelector('#qr-code-container canvas');
+        if (!canvas) return;
+        const link = document.createElement('a');
+        link.download = 'qr_doctor.png';
+        link.href = canvas.toDataURL();
+        link.click();
+    });
+
+    // ---------- GUARDAR PERFIL ----------
+    window.guardarPerfil = async () => {
+        const btn = document.getElementById('btnGuardar');
+        btn.disabled = true;
+        btn.innerHTML = '<i class="fas fa-spinner fa-pulse"></i> Guardando...';
+        mostrarLoading(true);
+        try {
+            let newFotoPerfil = profileData.foto_perfil, newFotoPerfilSize = profileData.foto_perfil_size;
+            let newFotoUrl = profileData.foto_url, newFotoSize = profileData.foto_size;
+
+            if (!pendingFotoFile && pendingFotoDataUrl) pendingFotoFile = dataURLToFile(pendingFotoDataUrl, 'foto_perfil.jpg');
+            if (!pendingLogoFile && pendingLogoDataUrl) pendingLogoFile = dataURLToFile(pendingLogoDataUrl, 'logo.jpg');
+
+            // Subir foto de perfil (sobrescribe)
+            if (pendingFotoFile) {
+                if (!['image/jpeg','image/png','image/gif','image/webp'].includes(pendingFotoFile.type)) throw new Error('Formato inválido');
+                if (pendingFotoFile.size > 2*1024*1024) throw new Error('Máximo 2MB');
+                const { url, size } = await uploadToSupabaseStorage(pendingFotoFile, currentUser.id, 'foto');
+                newFotoPerfil = url;
+                newFotoPerfilSize = size;
+                pendingFotoFile = null;
+                pendingFotoDataUrl = null;
+                localStorage.removeItem(FOTO_PERFIL_CACHE_KEY);
+            }
+
+            // Subir logo (sobrescribe) -> se guarda en foto_url, foto_size
+            if (pendingLogoFile) {
+                if (!['image/jpeg','image/png','image/gif','image/webp'].includes(pendingLogoFile.type)) throw new Error('Formato inválido');
+                if (pendingLogoFile.size > 2*1024*1024) throw new Error('Máximo 2MB');
+                const { url, size } = await uploadToSupabaseStorage(pendingLogoFile, currentUser.id, 'logo');
+                newFotoUrl = url;
+                newFotoSize = size;
+                pendingLogoFile = null;
+                pendingLogoDataUrl = null;
+                localStorage.removeItem(LOGO_CACHE_KEY);
+            }
+
+            const paisCod = document.getElementById('pais').value;
+            const paisNom = paisesCache.find(p => p.codigo === paisCod)?.nombre || '';
+            const updateData = {
+                id: currentUser.id,
                 nombre_doctor: document.getElementById('nombre_doctor').value,
                 especialidad: document.getElementById('especialidad').value,
                 registro_medico: document.getElementById('registro_medico').value,
                 telefono_doctor: document.getElementById('telefono_doctor').value,
                 centro_medico: document.getElementById('centro_medico').value,
+                pais: paisCod,
+                pais_nombre: paisNom,
+                ciudad: document.getElementById('ciudad').value,
                 direccion_consultorio: document.getElementById('direccion_consultorio').value,
-                pais: pais,
-                pais_nombre: paisNombre,
-                ciudad: ciudad,
-                foto_url: fotoUrl
+                foto_perfil: newFotoPerfil,
+                foto_perfil_size: newFotoPerfilSize,
+                foto_url: newFotoUrl,
+                foto_size: newFotoSize
             };
+            console.log('Guardando en Supabase:', updateData);
+            const { error } = await supabase.from('perfiles').upsert(updateData, { onConflict: 'id' });
+            if (error) throw error;
 
-            // 👈 IMPORTANTE: Usar upsert con onConflict
-            const { error: upsertError } = await supabase
-                .from('perfiles')
-                .upsert(updates, { onConflict: 'id' });
-
-            if (upsertError) throw upsertError;
-
+            profileData = { ...profileData, ...updateData };
+            document.getElementById('subir_perfil').value = '';
+            document.getElementById('subir_logo').value = '';
+            document.getElementById('btnEliminarPerfil').style.display = newFotoPerfil ? 'inline-flex' : 'none';
+            document.getElementById('btnEliminarLogo').style.display = newFotoUrl ? 'inline-flex' : 'none';
+            notificar('exito', 'Perfil actualizado');
+        } catch (err) {
+            console.error('Error al guardar perfil:', err);
+            notificar('error', err.message);
+        } finally {
             mostrarLoading(false);
-            await notificar('exito', 'Perfil actualizado correctamente');
-            
-            setTimeout(() => {
-                window.location.href = "menu.html";
-            }, 1500);
-
-        } catch (error) {
-            mostrarLoading(false);
-            console.error("Error completo:", error);
-            notificar('error', error.message);
-            btn.innerHTML = originalText;
             btn.disabled = false;
+            btn.innerHTML = '<i class="fas fa-save"></i> Guardar cambios';
         }
     };
+
+    // ---------- ELIMINAR IMAGEN ----------
+    window.eliminarImagen = async (tipo) => {
+        const nombreImagen = tipo === 'avatar' ? 'foto de perfil' : 'logo';
+        const confirm = await Swal.fire({
+            title: 'Eliminar imagen',
+            text: `¿Borrar ${nombreImagen}?`,
+            icon: 'warning',
+            showCancelButton: true
+        });
+        if (!confirm.isConfirmed) return;
+
+        if (tipo === 'avatar') {
+            if (currentUser) await deleteFromSupabaseStorage(currentUser.id, 'foto');
+            profileData.foto_perfil = null;
+            profileData.foto_perfil_size = 0;
+            pendingFotoFile = null;
+            pendingFotoDataUrl = null;
+            localStorage.removeItem(FOTO_PERFIL_CACHE_KEY);
+            document.getElementById('img_perfil').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='130' height='130' viewBox='0 0 24 24' fill='%23ffffff'%3E%3Cpath d='M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z'/%3E%3C/svg%3E";
+            document.getElementById('btnEliminarPerfil').style.display = 'none';
+        } else {
+            if (currentUser) await deleteFromSupabaseStorage(currentUser.id, 'logo');
+            profileData.foto_url = null;
+            profileData.foto_size = 0;
+            pendingLogoFile = null;
+            pendingLogoDataUrl = null;
+            localStorage.removeItem(LOGO_CACHE_KEY);
+            document.getElementById('img_logo').src = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='130' height='130' viewBox='0 0 24 24' fill='%23ffffff'%3E%3Cpath d='M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-1 8h-4v4h-4v-4H6V9h4V5h4v4h4v2z'/%3E%3C/svg%3E";
+            document.getElementById('btnEliminarLogo').style.display = 'none';
+        }
+        document.getElementById('subir_perfil').value = '';
+        document.getElementById('subir_logo').value = '';
+        await guardarPerfil();
+    };
+
+    // ---------- ELIMINAR CUENTA ----------
+    window.confirmarEliminarTodo = async () => {
+        const result = await Swal.fire({ title: 'Eliminar cuenta', text: '¿Borrar todo?', icon: 'error', showCancelButton: true });
+        if (result.isConfirmed) {
+            mostrarLoading(true);
+            try {
+                if (currentUser) {
+                    if (profileData.foto_perfil) await deleteFromSupabaseStorage(currentUser.id, 'foto');
+                    if (profileData.foto_url) await deleteFromSupabaseStorage(currentUser.id, 'logo');
+                }
+                await supabase.from('perfiles').delete().eq('id', currentUser.id);
+                await supabase.auth.signOut();
+                notificar('exito', 'Cuenta eliminada');
+                setTimeout(() => window.location.href = 'index.html', 2000);
+            } catch (err) { notificar('error', err.message); }
+            finally { mostrarLoading(false); }
+        }
+    };
+
+    // ---------- EVENTOS ----------
+    window.toggleMenu = () => document.getElementById('menu').classList.toggle('show');
+    window.cerrarSesion = cerrarSesionUtil;
+
+    document.getElementById('subir_perfil').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (!['image/jpeg','image/png','image/gif','image/webp'].includes(file.type)) return notificar('error','Formato no válido');
+        if (file.size > 2*1024*1024) return notificar('error','Máximo 2MB');
+        const { dataUrl, size, file: comp } = await comprimirYconvertir(file);
+        document.getElementById('img_perfil').src = dataUrl;
+        pendingFotoFile = comp;
+        pendingFotoDataUrl = dataUrl;
+        localStorage.setItem(FOTO_PERFIL_CACHE_KEY, JSON.stringify({ dataUrl, size, timestamp: Date.now() }));
+        document.getElementById('btnEliminarPerfil').style.display = 'inline-flex';
+        await guardarPerfil();
+        e.target.value = '';
+    });
+    document.getElementById('subir_logo').addEventListener('change', async (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        if (!['image/jpeg','image/png','image/gif','image/webp'].includes(file.type)) return notificar('error','Formato no válido');
+        if (file.size > 2*1024*1024) return notificar('error','Máximo 2MB');
+        const { dataUrl, size, file: comp } = await comprimirYconvertir(file);
+        document.getElementById('img_logo').src = dataUrl;
+        pendingLogoFile = comp;
+        pendingLogoDataUrl = dataUrl;
+        localStorage.setItem(LOGO_CACHE_KEY, JSON.stringify({ dataUrl, size, timestamp: Date.now() }));
+        document.getElementById('btnEliminarLogo').style.display = 'inline-flex';
+        await guardarPerfil();
+        e.target.value = '';
+    });
+    document.getElementById('pais').addEventListener('change', cargarCiudadesPorPais);
+    document.addEventListener('click', (e) => {
+        const menu = document.getElementById('menu');
+        const btn = document.querySelector('.menu-btn');
+        if (menu && !menu.contains(e.target) && !btn.contains(e.target)) menu.classList.remove('show');
+    });
+
+    window.addEventListener('load', cargarPerfilDesdeSupabase);
 </script>
 </body>
 </html>
